@@ -1,0 +1,30 @@
+Palette Studio
+Copyright 2026 Kristian Mario Miskovic (TekiDeki)
+https://github.com/TekiDeki/Palette-Studio
+
+This product is licensed under the Apache License, Version 2.0 (see LICENSE).
+
+--------------------------------------------------------------------------
+Third-party software
+--------------------------------------------------------------------------
+
+None. The application is a single HTML file built from the sources in this
+repository: HTML and CSS written for this project, a translation table with
+four locales, and plain JavaScript. It bundles no library, no framework, no
+analytics and no font file, and it loads nothing from the network at runtime -
+not even a CDN copy of anything.
+
+The colour maths implemented here (sRGB/HSL/HSV/CMYK conversions, WCAG 2.x
+relative luminance and contrast ratio, the Machado, Oliveira and Fernandes
+2009 colour vision deficiency matrices, CIE Lab conversion, deterministic
+k-means++ palette extraction and the CSS named colour table) is written for
+this project from the published public specifications. It does not include
+code from any colour library.
+
+--------------------------------------------------------------------------
+External services
+--------------------------------------------------------------------------
+
+None. Images are decoded and sampled inside the browser; the extracted
+palette never leaves the device. Exported files are produced locally and
+handed to the download manager of the browser or to the clipboard.

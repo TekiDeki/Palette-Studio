@@ -1,0 +1,3532 @@
+<!doctype html>
+<html lang="ro" class="theme-light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#2563eb">
+<meta name="color-scheme" content="light dark">
+<meta name="description" content="Studio de culori offline: extragi paleta dintr-o fotografie, generezi armonii si gradiente, verifici contrastul WCAG si simulezi daltonismul. Nimic nu pleaca din browser.">
+<meta name="author" content="Kristian Mario Miskovic (TekiDeki)">
+<meta name="robots" content="index, follow">
+<meta property="og:title" content="Palette Studio · TekiDeki">
+<meta property="og:description" content="Palete din imagini, armonii, gradiente, contrast WCAG si simulare de daltonism. Un singur fisier HTML, fara server.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://tekideki.github.io/Palette-Studio/">
+<link rel="canonical" href="https://tekideki.github.io/Palette-Studio/">
+<link rel="alternate" hreflang="ro" href="https://tekideki.github.io/Palette-Studio/?lang=ro">
+<link rel="alternate" hreflang="en" href="https://tekideki.github.io/Palette-Studio/?lang=en">
+<link rel="alternate" hreflang="sr-Latn" href="https://tekideki.github.io/Palette-Studio/?lang=sr-Latn">
+<link rel="alternate" hreflang="sr-Cyrl" href="https://tekideki.github.io/Palette-Studio/?lang=sr-Cyrl">
+<link rel="alternate" hreflang="x-default" href="https://tekideki.github.io/Palette-Studio/">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="favicon.ico">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<title>Palette Studio · TekiDeki</title>
+<style>/* Palette Studio · TekiDeki - styles
+ * SPDX-License-Identifier: Apache-2.0
+ * Copyright 2026 Kristian Mario Miskovic (TekiDeki)
+ * No external font, no icon font, no CDN. Everything below is local.
+ */
+
+:root {
+  --bg: #f4f6f9;
+  --bg-alt: #ffffff;
+  --panel: #ffffff;
+  --panel-soft: #f7f8fb;
+  --line: #e2e6ee;
+  --line-strong: #ccd3e0;
+  --text: #101725;
+  --text-soft: #4d5a70;
+  --text-muted: #75839b;
+  --accent: #2563eb;
+  --accent-soft: #dbe6ff;
+  --accent-text: #ffffff;
+  --ok: #15803d;
+  --ok-bg: #dcfce7;
+  --bad: #b91c1c;
+  --bad-bg: #fee2e2;
+  --warn: #92400e;
+  --warn-bg: #fef3c7;
+  --shadow: 0 1px 2px rgba(16, 23, 37, 0.05), 0 12px 32px rgba(16, 23, 37, 0.07);
+  --radius: 14px;
+  --radius-sm: 9px;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  --checker: conic-gradient(#e9ecf2 25%, #ffffff 0 50%, #e9ecf2 0 75%, #ffffff 0);
+  color-scheme: light;
+}
+
+.theme-dark {
+  --bg: #0b1120;
+  --bg-alt: #101728;
+  --panel: #131c30;
+  --panel-soft: #0f1729;
+  --line: #23304a;
+  --line-strong: #33415f;
+  --text: #e9edf6;
+  --text-soft: #b3bed2;
+  --text-muted: #8894ab;
+  --accent: #5b8bff;
+  --accent-soft: #1d2b4d;
+  --accent-text: #08101f;
+  --ok: #4ade80;
+  --ok-bg: #12291c;
+  --bad: #fca5a5;
+  --bad-bg: #31151a;
+  --warn: #fcd34d;
+  --warn-bg: #2c2313;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 16px 40px rgba(0, 0, 0, 0.35);
+  --checker: conic-gradient(#1c2438 25%, #232d45 0 50%, #1c2438 0 75%, #232d45 0);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+
+/* A bare [hidden] loses against any component rule that sets display, so the
+ * attribute is made authoritative once, globally. */
+[hidden] { display: none !important; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.55;
+  -webkit-text-size-adjust: 100%;
+}
+
+h1, h2, h3, h4 { margin: 0; line-height: 1.2; letter-spacing: -0.01em; }
+
+p { margin: 0; }
+
+button, input, select, textarea { font: inherit; color: inherit; }
+
+a { color: var(--accent); }
+
+:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 20;
+  padding: 10px 16px;
+  background: var(--accent);
+  color: var(--accent-text);
+  border-radius: 0 0 10px 0;
+  text-decoration: none;
+}
+
+.skip-link:focus { left: 0; }
+
+.wrap {
+  width: 100%;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* ------------------------------------------------------------------ header */
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
+}
+
+.topbar-inner {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 62px;
+  padding: 10px 20px;
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  color: var(--text);
+  text-decoration: none;
+  letter-spacing: -0.01em;
+}
+
+.brand-mark {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  background: linear-gradient(135deg, #2563eb, #7c3aed 45%, #ec4899);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35);
+  flex: none;
+}
+
+.brand-mark svg { display: none; }
+
+.brand-text { display: flex; flex-direction: column; line-height: 1.15; }
+
+.brand-tagline {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+  letter-spacing: 0;
+}
+
+.topbar-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 11px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--panel);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-soft);
+}
+
+.icon-btn:hover { border-color: var(--line-strong); color: var(--text); }
+
+.icon-btn svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+.theme-sun { display: none; }
+.theme-moon { display: block; }
+.theme-light .theme-sun { display: block; }
+.theme-light .theme-moon { display: none; }
+
+select, .select {
+  padding: 7px 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--panel);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* -------------------------------------------------------------------- hero */
+
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.85fr);
+  gap: 28px;
+  align-items: center;
+  padding: 34px 0 22px;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+.eyebrow::before {
+  content: "";
+  width: 22px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--accent);
+}
+
+.hero h1 { font-size: clamp(26px, 4vw, 40px); font-weight: 800; }
+
+.hero-lede {
+  margin-top: 12px;
+  color: var(--text-soft);
+  max-width: 56ch;
+  font-size: 15.5px;
+}
+
+.hero-actions { margin-top: 18px; display: flex; gap: 10px; flex-wrap: wrap; }
+
+.hero-note {
+  margin-top: 12px;
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+.hero-card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel);
+  box-shadow: var(--shadow);
+  padding: 14px;
+}
+
+.hero-swatch {
+  height: 132px;
+  border-radius: var(--radius-sm);
+  background: var(--current, #2563eb);
+  border: 1px solid var(--line);
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 10px 12px;
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.hero-swatch span {
+  background: color-mix(in srgb, var(--bg-alt) 78%, transparent);
+  color: var(--text);
+  padding: 3px 7px;
+  border-radius: 6px;
+}
+
+.hero-meta {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.hero-meta div {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--panel-soft);
+  padding: 7px 9px;
+}
+
+.hero-meta b {
+  display: block;
+  font-family: var(--mono);
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: -0.01em;
+}
+
+.hero-meta span { font-size: 10.5px; color: var(--text-muted); letter-spacing: 0.03em; text-transform: uppercase; }
+
+/* ------------------------------------------------------------------ layout */
+
+main { padding-bottom: 60px; }
+
+.section-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 26px 0 12px;
+}
+
+.section-head h2 { font-size: 19px; font-weight: 800; }
+
+.section-head .step {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-radius: 6px;
+  padding: 3px 7px;
+}
+
+.section-head p { width: 100%; color: var(--text-soft); font-size: 13.5px; }
+
+.grid { display: grid; gap: 18px; }
+
+.grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+.grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 16px;
+}
+
+.panel h3 { font-size: 15px; font-weight: 800; }
+
+.hint { color: var(--text-soft); font-size: 13px; margin-top: 6px; }
+
+.panel-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+/* ---------------------------------------------------------------- controls */
+
+.field { margin-top: 12px; }
+
+.field-label {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.text-input {
+  width: 100%;
+  padding: 9px 11px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--panel-soft);
+  font-family: var(--mono);
+  font-size: 14px;
+}
+
+.text-input.invalid { border-color: var(--bad); background: var(--bad-bg); }
+
+.row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 8px 13px;
+  border-radius: 999px;
+  border: 1px solid var(--line-strong);
+  background: var(--panel);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.btn:hover { border-color: var(--accent); color: var(--accent); }
+
+.btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+
+.btn-primary:hover { background: color-mix(in srgb, var(--accent) 88%, black); color: var(--accent-text); }
+
+.btn-quiet { background: transparent; border-color: transparent; color: var(--text-soft); }
+
+.btn-quiet:hover { background: var(--panel-soft); color: var(--text); }
+
+.btn[disabled] { opacity: 0.45; cursor: not-allowed; }
+
+.btn-sm { padding: 5px 10px; font-size: 12px; }
+
+input[type="range"] {
+  width: 100%;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+input[type="color"] {
+  inline-size: 100%;
+  block-size: 40px;
+  padding: 0;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: none;
+  cursor: pointer;
+}
+
+input[type="color"]::-webkit-color-swatch-wrapper { padding: 3px; }
+input[type="color"]::-webkit-color-swatch { border: none; border-radius: 6px; }
+
+.range-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; }
+
+.range-value {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text-soft);
+  min-width: 52px;
+  text-align: right;
+}
+
+.segmented {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--panel-soft);
+  flex-wrap: wrap;
+}
+
+.segmented button {
+  flex: 1 1 auto;
+  padding: 6px 10px;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-soft);
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.segmented button[aria-pressed="true"] {
+  background: var(--panel);
+  color: var(--text);
+  box-shadow: 0 1px 2px rgba(16, 23, 37, 0.12);
+}
+
+.theme-dark .segmented button[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent); }
+
+/* ------------------------------------------------------------------ colors */
+
+.hex-row { display: grid; grid-template-columns: 1fr auto auto; gap: 8px; align-items: end; }
+
+.chip-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; align-items: stretch; }
+
+.swatch {
+  position: relative;
+  flex: 0 0 auto;
+  width: calc((100% - 40px) / 6);
+  min-width: 84px;
+  min-height: 78px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--swatch, #ccc);
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  text-align: left;
+  overflow: hidden;
+}
+
+@media (max-width: 700px) {
+  .swatch { width: calc((100% - 24px) / 4); min-width: 0; }
+}
+
+.swatch.is-active { box-shadow: 0 0 0 3px var(--accent); }
+
+.swatch-label {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 6px;
+  background: color-mix(in srgb, var(--bg-alt) 82%, transparent);
+  color: var(--text);
+  border-radius: 0 6px 0 0;
+  align-self: flex-start;
+  word-break: break-all;
+}
+
+.swatch-meta {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  font-size: 10.5px;
+  font-weight: 700;
+  font-family: var(--mono);
+  padding: 2px 5px;
+  border-radius: 5px;
+  background: color-mix(in srgb, var(--bg-alt) 82%, transparent);
+  color: var(--text-soft);
+}
+
+.formats { display: grid; gap: 6px; margin-top: 12px; }
+
+.format-row {
+  display: grid;
+  grid-template-columns: 62px minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+  padding: 6px 8px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--panel-soft);
+}
+
+.format-row dt {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.format-row dd {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 12.5px;
+  word-break: break-all;
+}
+
+.history { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+
+.history button {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: 1px solid var(--line-strong);
+  background: var(--swatch, #ccc);
+  cursor: pointer;
+  padding: 0;
+}
+
+.empty {
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  color: var(--text-muted);
+  font-size: 13px;
+  text-align: center;
+  background: var(--panel-soft);
+}
+
+/* -------------------------------------------------------------------- drop */
+
+.drop {
+  border: 2px dashed var(--line-strong);
+  border-radius: var(--radius);
+  padding: 22px 16px;
+  text-align: center;
+  background: var(--panel-soft);
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.drop.is-over { border-color: var(--accent); background: var(--accent-soft); }
+
+.drop-title { font-weight: 800; font-size: 15px; }
+
+.drop-hint { color: var(--text-soft); font-size: 13px; margin-top: 4px; }
+
+.drop-actions { margin-top: 12px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+
+.source-preview {
+  margin-top: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--checker) 0 0 / 16px 16px;
+  max-height: 220px;
+}
+
+.source-preview img { display: block; width: 100%; height: auto; max-height: 220px; object-fit: contain; }
+
+/* ------------------------------------------------------------------ status */
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 8px 11px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+  background: var(--panel-soft);
+  font-size: 13px;
+  color: var(--text-soft);
+}
+
+.status.ok { border-color: color-mix(in srgb, var(--ok) 45%, var(--line)); background: var(--ok-bg); color: var(--ok); }
+
+.status.error { border-color: color-mix(in srgb, var(--bad) 45%, var(--line)); background: var(--bad-bg); color: var(--bad); }
+
+.status[hidden] { display: none; }
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  padding: 3px 7px;
+  border-radius: 999px;
+  border: 1px solid var(--line-strong);
+  background: var(--panel-soft);
+  color: var(--text-soft);
+  white-space: nowrap;
+}
+
+.badge.pass { background: var(--ok-bg); color: var(--ok); border-color: color-mix(in srgb, var(--ok) 40%, var(--line)); }
+
+.badge.fail { background: var(--bad-bg); color: var(--bad); border-color: color-mix(in srgb, var(--bad) 40%, var(--line)); }
+
+/* ---------------------------------------------------------------- contrast */
+
+.contrast-demo {
+  margin-top: 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+  padding: 18px;
+  background: var(--demo-bg, #ffffff);
+  color: var(--demo-fg, #101725);
+}
+
+.contrast-demo .big { font-size: 24px; font-weight: 800; }
+
+.contrast-demo .small { font-size: 14px; margin-top: 6px; }
+
+.contrast-ratio {
+  font-family: var(--mono);
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.contrast-tests { display: grid; gap: 8px; margin-top: 12px; }
+
+.contrast-test {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 10px;
+  align-items: center;
+  padding: 9px 11px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--panel-soft);
+}
+
+.contrast-test b { font-size: 13.5px; }
+
+.contrast-test small { display: block; color: var(--text-muted); font-size: 11.5px; }
+
+.contrast-scale {
+  margin-top: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.contrast-scale table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+
+.contrast-scale th, .contrast-scale td { padding: 7px 9px; text-align: left; border-bottom: 1px solid var(--line); }
+
+.contrast-scale th { background: var(--panel-soft); font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); }
+
+.contrast-scale td.num { font-family: var(--mono); text-align: right; }
+
+.contrast-scale tr:last-child td { border-bottom: none; }
+
+/* --------------------------------------------------------------------- cvd */
+
+.cvd-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 12px; }
+
+.cvd-item {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--panel-soft);
+}
+
+.cvd-swatch { height: 62px; background: var(--cvd, #ccc); }
+
+.cvd-body { padding: 8px 10px; }
+
+.cvd-body b { display: block; font-size: 13px; }
+
+.cvd-body span { font-family: var(--mono); font-size: 11.5px; color: var(--text-soft); }
+
+.cvd-body em { display: block; font-style: normal; font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+
+.cvd-strip { display: flex; height: 46px; border-radius: var(--radius-sm); overflow: hidden; border: 1px solid var(--line); margin-top: 10px; }
+
+.cvd-strip div { flex: 1 1 0; }
+
+/* ---------------------------------------------------------------- gradient */
+
+.gradient-preview {
+  height: 132px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+  margin-top: 12px;
+  background: var(--gradient, linear-gradient(135deg, #2563eb, #7c3aed));
+}
+
+.stop-list { display: grid; gap: 6px; margin-top: 10px; }
+
+.stop-row {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) 92px auto;
+  gap: 8px;
+  align-items: center;
+  padding: 6px 8px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--panel-soft);
+}
+
+.stop-chip {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1px solid var(--line-strong);
+  background: var(--swatch, #ccc);
+  padding: 0;
+  cursor: pointer;
+}
+
+.stop-hex { font-family: var(--mono); font-size: 12px; word-break: break-all; }
+
+/* ------------------------------------------------------------------ export */
+
+.export-tabs { display: flex; gap: 4px; flex-wrap: wrap; }
+
+.code {
+  margin-top: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--panel-soft);
+  padding: 12px;
+  font-family: var(--mono);
+  font-size: 12.5px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 300px;
+  overflow: auto;
+  color: var(--text);
+}
+
+/* ------------------------------------------------------------------- about */
+
+.about-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-top: 12px; }
+
+.about-block h4 { font-size: 13px; font-weight: 800; margin-bottom: 6px; }
+
+.about-block p, .about-block li { font-size: 13px; color: var(--text-soft); }
+
+.about-block ul { margin: 0; padding-left: 18px; }
+
+.kbd {
+  font-family: var(--mono);
+  font-size: 11px;
+  border: 1px solid var(--line-strong);
+  border-bottom-width: 2px;
+  border-radius: 5px;
+  padding: 1px 5px;
+  background: var(--panel);
+}
+
+/* ------------------------------------------------------------------ footer */
+
+.foot {
+  border-top: 1px solid var(--line);
+  padding: 22px 0 40px;
+  color: var(--text-muted);
+  font-size: 12.5px;
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.foot a { color: var(--text-soft); }
+
+/* ------------------------------------------------------------- responsive */
+
+@media (max-width: 940px) {
+  .hero { grid-template-columns: minmax(0, 1fr); padding-top: 24px; }
+  .grid-3, .about-grid { grid-template-columns: minmax(0, 1fr); }
+  .cvd-grid { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (max-width: 700px) {
+  .grid-2 { grid-template-columns: minmax(0, 1fr); }
+  .brand-tagline { display: none; }
+  .hex-row { grid-template-columns: 1fr; }
+  .hero-meta { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .contrast-test { grid-template-columns: minmax(0, 1fr) auto; }
+  .stop-row { grid-template-columns: 34px minmax(0, 1fr) auto; }
+  .wrap, .topbar-inner { padding-left: 14px; padding-right: 14px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+@media print {
+  .topbar, .hero-actions, .drop, .foot { display: none; }
+  .panel { box-shadow: none; break-inside: avoid; }
+}
+
+/* ------------------------------------------------------- a11y + notificari */
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  z-index: 30;
+  max-width: min(92vw, 460px);
+  padding: 10px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--line-strong);
+  background: var(--panel);
+  color: var(--text);
+  box-shadow: var(--shadow);
+  font-size: 13.5px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.toast.ok { border-color: color-mix(in srgb, var(--ok) 50%, var(--line)); background: var(--ok-bg); color: var(--ok); }
+
+.toast.error { border-color: color-mix(in srgb, var(--bad) 50%, var(--line)); background: var(--bad-bg); color: var(--bad); }
+
+.toast[hidden] { display: none; }</style>
+<script>try{if(localStorage.getItem('tekideki-palette-theme')==='dark'){document.documentElement.classList.remove('theme-light');document.documentElement.classList.add('theme-dark');}}catch(e){}</script>
+</head>
+<body>
+<a class="skip-link" href="#main" data-i18n="skipToContent">Sari la continut</a>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="#main">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <span class="brand-text">
+        <span data-i18n="appName">Palette Studio</span>
+        <span class="brand-tagline" data-i18n="tagline">Culori, palete si gradiente, facute local.</span>
+      </span>
+    </a>
+    <div class="topbar-actions">
+      <button id="undoBtn" class="icon-btn" type="button" disabled>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10H9"/></svg>
+        <span data-i18n="undo">Anuleaza</span>
+      </button>
+      <button id="themeBtn" class="icon-btn" type="button" aria-pressed="false">
+        <svg class="theme-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"/></svg>
+        <svg class="theme-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4m11.4-11.4 1.4-1.4"/></svg>
+        <span id="themeLabel" data-i18n="themeDark">Tema inchisa</span>
+      </button>
+      <label class="sr-only" for="langSelect" data-i18n="language">Limba interfetei</label>
+      <select id="langSelect" aria-label="Interface language">
+        <option value="ro" data-base="Română">Română</option>
+        <option value="en" data-base="English">English</option>
+        <option value="sr-latn" data-base="Srpski (latinica)">Srpski (latinica)</option>
+        <option value="sr-cyrl" data-base="Srpski (ćirilica)">Srpski (ćirilica)</option>
+      </select>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <section class="hero">
+    <div>
+      <span class="eyebrow" data-i18n="eyebrow">STUDIO DE CULORI, FARA SERVER</span>
+      <h1 data-i18n="heroTitle">Culoarea potrivita, masurata corect.</h1>
+      <p class="hero-lede" data-i18n="heroSubtitle">Extragi o paleta dintr-o fotografie, generezi armonii si gradiente, verifici contrastul WCAG si vezi cum arata totul pentru ochii cu daltonism. Totul ruleaza in browser: niciun fisier nu pleaca de pe dispozitivul tau.</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="#sec-color" data-i18n="heroCta">Incepe cu o culoare</a>
+        <a class="btn" href="#sec-about" data-i18n="secAbout">Despre</a>
+      </div>
+      <p class="hero-note" data-i18n="heroPrivacy">Fara cont, fara incarcare, fara analytics.</p>
+    </div>
+    <div class="hero-card">
+      <div id="heroSwatch" class="hero-swatch"><span id="heroHex">#2563eb</span><span id="heroName">azuriu</span></div>
+      <div class="hero-meta">
+        <div><b id="metaRgb">rgb(37, 99, 235)</b><span>RGB</span></div>
+        <div><b id="metaHsl">hsl(221, 83%, 53%)</b><span>HSL</span></div>
+        <div><b id="metaContrast">5.17:1</b><span data-i18n="contrastOnWhiteShort">pe alb</span></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<main id="main" class="wrap">
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+  <!-- 1. culoare de baza -->
+  <div class="section-head" id="sec-color">
+    <span class="step">01</span>
+    <h2 data-i18n="colorTitle">1. Alege culoarea de baza</h2>
+    <p data-i18n="colorHint">Scrie un cod hex, foloseste selectorul sau ia culoarea dintr-o imagine. Totul se salveaza local.</p>
+  </div>
+  <div class="grid grid-2">
+    <section class="panel">
+      <div class="hex-row">
+        <div>
+          <label class="field-label" for="hexInput" data-i18n="hexLabel">Cod hex</label>
+          <input id="hexInput" class="text-input" type="text" value="#2563eb" spellcheck="false" autocomplete="off" aria-describedby="hexError">
+        </div>
+        <div>
+          <span class="field-label" data-i18n="pickColor">Selector de culoare</span>
+          <input id="colorPicker" type="color" value="#2563eb" aria-label="Color picker">
+        </div>
+        <div class="row">
+          <button id="randomBtn" class="btn btn-sm" type="button" data-i18n="randomColor">Culoare aleatoare</button>
+          <button id="copyHexBtn" class="btn btn-sm btn-primary" type="button" data-i18n="copyHex">Copiaza hex</button>
+        </div>
+      </div>
+      <p id="hexError" class="status error" role="alert" hidden></p>
+
+      <div class="field">
+        <label class="field-label" for="rangeH" data-i18n="h">Nuanta</label>
+        <div class="range-row"><input id="rangeH" type="range" min="0" max="359" step="1" value="221"><span class="range-value" id="valueH">221</span></div>
+      </div>
+      <div class="field">
+        <label class="field-label" for="rangeS" data-i18n="s">Saturatie</label>
+        <div class="range-row"><input id="rangeS" type="range" min="0" max="100" step="1" value="83"><span class="range-value" id="valueS">83%</span></div>
+      </div>
+      <div class="field">
+        <label class="field-label" for="rangeL" data-i18n="l">Luminozitate</label>
+        <div class="range-row"><input id="rangeL" type="range" min="0" max="100" step="1" value="53"><span class="range-value" id="valueL">53%</span></div>
+      </div>
+
+      <div class="field">
+        <span class="field-label">RGB</span>
+        <div class="grid grid-3">
+          <div><label class="field-label" for="inputR" data-i18n="rLabel">Rosu</label><input id="inputR" class="text-input" type="number" min="0" max="255" value="37"></div>
+          <div><label class="field-label" for="inputG" data-i18n="gLabel">Verde</label><input id="inputG" class="text-input" type="number" min="0" max="255" value="99"></div>
+          <div><label class="field-label" for="inputB" data-i18n="bLabel">Albastru</label><input id="inputB" class="text-input" type="number" min="0" max="255" value="235"></div>
+        </div>
+      </div>
+
+      <div class="field">
+        <span class="field-label" data-i18n="formatsTitle">Formate</span>
+        <dl class="formats">
+          <div class="format-row"><dt>HEX</dt><dd id="fmtHex">#2563eb</dd><td><button class="btn btn-sm btn-quiet" type="button" data-copy="#fmtHex" data-i18n="copyCode">Copiaza codul</button></td></div>
+          <div class="format-row"><dt>RGB</dt><dd id="fmtRgb">rgb(37, 99, 235)</dd><td><button class="btn btn-sm btn-quiet" type="button" data-copy="#fmtRgb" data-i18n="copyCode">Copiaza codul</button></td></div>
+          <div class="format-row"><dt>HSL</dt><dd id="fmtHsl">hsl(221, 83%, 53%)</dd><td><button class="btn btn-sm btn-quiet" type="button" data-copy="#fmtHsl" data-i18n="copyCode">Copiaza codul</button></td></div>
+          <div class="format-row"><dt>HSV</dt><dd id="fmtHsv">hsv(221, 84%, 92%)</dd><td><button class="btn btn-sm btn-quiet" type="button" data-copy="#fmtHsv" data-i18n="copyCode">Copiaza codul</button></td></div>
+          <div class="format-row"><dt>CMYK</dt><dd id="fmtCmyk">cmyk(84%, 58%, 0%, 8%)</dd><td><button class="btn btn-sm btn-quiet" type="button" data-copy="#fmtCmyk" data-i18n="copyCode">Copiaza codul</button></td></div>
+          <div class="format-row"><dt>LAB</dt><dd id="fmtLab">lab(48.5, 40.1, -74.2)</dd><td><button class="btn btn-sm btn-quiet" type="button" data-copy="#fmtLab" data-i18n="copyCode">Copiaza codul</button></td></div>
+          <div class="format-row"><dt data-i18n="nearestName">Cel mai apropiat nume</dt><dd id="fmtName">azuriu</dd><td><span class="badge" id="fmtNameDelta">dE 14.5</span></td></div>
+        </dl>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <div>
+          <h3 data-i18n="tintShadeTitle">Nuante si umbre</h3>
+          <p class="hint" data-i18n="tintShadeHint">Scala generata din culoarea de baza, cu contrastul pe alb si pe negru pentru fiecare treapta.</p>
+        </div>
+      </div>
+      <div id="shadeList" class="contrast-scale"></div>
+
+      <div class="panel-head" style="margin-top:18px">
+        <div>
+          <h3 data-i18n="historyTitle">Ultimele culori</h3>
+          <p class="hint" data-i18n="historyHint">Culorile folosite raman salvate in browser.</p>
+        </div>
+      </div>
+      <div id="historyList" class="history"></div>
+      <p id="historyEmpty" class="empty" data-i18n="historyEmpty">Culorile folosite apar aici.</p>
+    </section>
+  </div>
+
+  <!-- 2. armonii -->
+  <div class="section-head" id="sec-harmony">
+    <span class="step">02</span>
+    <h2 data-i18n="harmonyTitle">2. Armonii</h2>
+    <p data-i18n="harmonyHint">Reguli clasice de rotire a nuantei in jurul cercului de culori.</p>
+  </div>
+  <section class="panel">
+    <div id="harmonyTabs" class="segmented" role="group" aria-label="Harmony scheme"></div>
+    <div id="harmonySwatches" class="chip-row"></div>
+    <div class="row" style="margin-top:12px">
+      <button id="harmonyAddBtn" class="btn btn-primary btn-sm" type="button" data-i18n="harmonyAdd">Adauga in paleta</button>
+      <span class="badge" id="harmonyBadge">3 culori</span>
+    </div>
+  </section>
+
+  <!-- 3. paleta din imagine -->
+  <div class="section-head" id="sec-palette">
+    <span class="step">03</span>
+    <h2 data-i18n="paletteTitle">3. Paleta dintr-o imagine</h2>
+    <p data-i18n="paletteHint">Trage o fotografie aici sau alege un fisier. Algoritmul k-means gaseste culorile dominante si cat la suta din imagine ocupa fiecare.</p>
+  </div>
+  <div class="grid grid-2">
+    <section class="panel">
+      <div id="dropZone" class="drop">
+        <p class="drop-title" data-i18n="paletteDropTitle">Trage imaginea aici</p>
+        <p class="drop-hint" data-i18n="paletteDropHint">PNG, JPEG, WebP, GIF sau AVIF. Imaginea ramane in memoria paginii.</p>
+        <div class="drop-actions">
+          <label class="btn btn-primary btn-sm" for="imageInput" data-i18n="paletteChoose">Alege imagine</label>
+          <button id="demoImageBtn" class="btn btn-sm" type="button" data-i18n="paletteDemo">Imagine demonstrativa</button>
+        </div>
+      </div>
+      <input id="imageInput" type="file" accept="image/*" hidden>
+      <div class="field">
+        <label class="field-label" for="paletteK" data-i18n="paletteColors">Culori extrase</label>
+        <div class="range-row"><input id="paletteK" type="range" min="2" max="12" step="1" value="6"><span class="range-value" id="paletteKValue">6</span></div>
+      </div>
+      <div class="row">
+        <button id="extractBtn" class="btn btn-primary" type="button" data-i18n="paletteExtract">Extrage paleta</button>
+        <button id="paletteUseBtn" class="btn btn-sm" type="button" data-i18n="paletteSave">Salveaza paleta</button>
+      </div>
+      <p id="paletteStatus" class="status" role="status" hidden></p>
+      <div id="sourcePreview" class="source-preview" hidden><img id="sourceImage" alt=""></div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <div>
+          <h3 data-i18n="paletteResultTitle">Culori dominante</h3>
+          <p class="hint" data-i18n="paletteResultHint">Apasa o culoare ca sa devina baza. Procentajul arata cat ocupa in imagine.</p>
+        </div>
+        <button id="paletteClearBtn" class="btn btn-sm btn-quiet" type="button" data-i18n="paletteClear">Goleste paleta</button>
+      </div>
+      <div id="extractedSwatches" class="chip-row"></div>
+      <p id="extractedEmpty" class="empty" data-i18n="paletteEmpty">Nicio imagine incarcata inca.</p>
+
+      <div class="panel-head" style="margin-top:18px">
+        <div>
+          <h3 data-i18n="savedTitle">Paleta salvata</h3>
+          <p class="hint" data-i18n="savedHint">Aceasta paleta este folosita pentru gradient si pentru export.</p>
+        </div>
+      </div>
+      <div id="savedSwatches" class="chip-row"></div>
+      <p id="savedEmpty" class="empty" data-i18n="savedEmpty">Paleta salvata este goala. Adauga culori din armonii sau din imagine.</p>
+    </section>
+  </div>
+
+  <!-- 4. gradient -->
+  <div class="section-head" id="sec-gradient">
+    <span class="step">04</span>
+    <h2 data-i18n="gradientTitle">4. Gradient</h2>
+    <p data-i18n="gradientHint">Construieste un gradient din paleta si exporta-l ca CSS sau SVG.</p>
+  </div>
+  <section class="panel">
+    <div class="grid grid-2">
+      <div>
+        <div class="field">
+          <span class="field-label" data-i18n="gradientType">Tip</span>
+          <div id="gradientTypeTabs" class="segmented" role="group" aria-label="Gradient type"></div>
+        </div>
+        <div class="field">
+          <label class="field-label" for="gradientAngle" data-i18n="gradientAngle">Unghi</label>
+          <div class="range-row"><input id="gradientAngle" type="range" min="0" max="359" step="1" value="135"><span class="range-value" id="gradientAngleValue">135deg</span></div>
+        </div>
+        <div class="field">
+          <span class="field-label" data-i18n="gradientStops">Puncte de culoare</span>
+          <div id="stopList" class="stop-list"></div>
+        </div>
+        <div class="row">
+          <button id="addStopBtn" class="btn btn-sm" type="button" data-i18n="gradientAddStop">Adauga punct</button>
+          <button id="gradientResetBtn" class="btn btn-sm btn-quiet" type="button" data-i18n="gradientReset">Reset la paleta</button>
+        </div>
+        <p id="gradientStatus" class="status" role="status" hidden></p>
+      </div>
+      <div>
+        <div id="gradientPreview" class="gradient-preview" role="img" aria-label="Gradient preview"></div>
+        <span class="field-label" style="margin-top:12px;display:block" data-i18n="gradientCssLabel">Cod CSS</span>
+        <pre id="gradientCode" class="code" tabindex="0"></pre>
+        <div class="row">
+          <button id="copyGradientBtn" class="btn btn-sm btn-primary" type="button" data-i18n="copyCode">Copiaza codul</button>
+          <button id="downloadSvgBtn" class="btn btn-sm" type="button" data-i18n="downloadFile">Descarca</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. contrast -->
+  <div class="section-head" id="sec-contrast">
+    <span class="step">05</span>
+    <h2 data-i18n="contrastTitle">5. Verificare contrast</h2>
+    <p data-i18n="contrastHint">Raportul WCAG 2.x intre text si fundal, cu pragurile exacte.</p>
+  </div>
+  <div class="grid grid-2">
+    <section class="panel">
+      <div class="grid grid-2">
+        <div class="field">
+          <label class="field-label" for="fgInput" data-i18n="contrastForeground">Culoarea textului</label>
+          <input id="fgInput" class="text-input" type="text" value="#2563eb" spellcheck="false" autocomplete="off">
+        </div>
+        <div class="field">
+          <label class="field-label" for="bgInput" data-i18n="contrastBackground">Culoarea fundalului</label>
+          <input id="bgInput" class="text-input" type="text" value="#ffffff" spellcheck="false" autocomplete="off">
+        </div>
+      </div>
+      <div class="row">
+        <button id="swapBtn" class="btn btn-sm" type="button" data-i18n="contrastSwap">Inverseaza</button>
+        <button id="useBaseBtn" class="btn btn-sm btn-quiet" type="button" data-i18n="contrastUseBase">Foloseste culoarea de baza</button>
+      </div>
+      <p id="contrastStatus" class="status error" role="alert" hidden></p>
+
+      <div class="contrast-tests">
+        <div class="contrast-test"><b data-i18n="contrastNormalText">Text normal</b><small data-i18n="contrastLevelAA">AA: minim 4.5:1 pentru text normal, 3:1 pentru text mare</small><span class="badge" id="badgeNormal">-</span></div>
+        <div class="contrast-test"><b data-i18n="contrastLargeText">Text mare</b><small data-i18n="contrastLargeRule">AA mare: 3:1, AAA mare: 4.5:1</small><span class="badge" id="badgeLarge">-</span></div>
+        <div class="contrast-test"><b data-i18n="contrastUiText">Elemente de interfata</b><small data-i18n="contrastLevelUi">Elemente grafice: minim 3:1</small><span class="badge" id="badgeUi">-</span></div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <div>
+          <span class="field-label" data-i18n="contrastRatioLabel">Raport de contrast</span>
+          <span class="contrast-ratio" id="contrastValue">5.17:1</span>
+        </div>
+        <span class="badge" id="contrastVerdict">AA</span>
+      </div>
+      <div id="contrastDemo" class="contrast-demo">
+        <p class="big">Aa - 24 px bold</p>
+        <p class="small" data-i18n="contrastDemoText">Text normal de 14 px pe fundalul ales, exact asa cum il vede cititorul.</p>
+      </div>
+      <div class="field">
+        <span class="field-label" data-i18n="contrastSuggest">Sugestie accesibila</span>
+        <p class="hint" id="suggestionText"></p>
+        <div class="row" id="suggestionRow" hidden>
+          <button id="applySuggestionBtn" class="btn btn-sm btn-primary" type="button" data-i18n="contrastApply">Aplica sugestia</button>
+          <span class="badge" id="suggestionSwatch">-</span>
+        </div>
+      </div>
+      <div id="paletteContrast" class="contrast-scale"></div>
+    </section>
+  </div>
+
+  <!-- 6. daltonism -->
+  <div class="section-head" id="sec-cvd">
+    <span class="step">06</span>
+    <h2 data-i18n="cvdTitle">6. Simulare daltonism</h2>
+    <p data-i18n="cvdHint">Matricele Machado, Oliveira si Fernandes (2009), severitate maxima. Aproape 1 din 12 barbati vede altfel rosul si verdele.</p>
+  </div>
+  <section class="panel">
+    <div id="cvdGrid" class="cvd-grid"></div>
+    <span class="field-label" style="margin-top:16px;display:block" data-i18n="cvdPaletteTitle">Paleta salvata, aceeasi simulare</span>
+    <div id="cvdStrip" class="cvd-strip"></div>
+    <p class="hint" style="margin-top:10px" data-i18n="cvdNote">Simularea este un model matematic, nu o diagnosticare. Verifica intotdeauna si cu o a doua unealta daca proiectul este critic.</p>
+  </section>
+
+  <!-- 7. export -->
+  <div class="section-head" id="sec-export">
+    <span class="step">07</span>
+    <h2 data-i18n="exportTitle">7. Export</h2>
+    <p data-i18n="exportHint">Formate generate local, fara nicio cerere in retea.</p>
+  </div>
+  <section class="panel">
+    <div class="row" style="justify-content:space-between">
+      <div id="exportTabs" class="segmented export-tabs" role="group" aria-label="Export format"></div>
+      <div class="field" style="margin:0;max-width:220px">
+        <label class="field-label" for="prefixInput" data-i18n="exportPrefix">Prefix pentru variabile</label>
+        <input id="prefixInput" class="text-input" type="text" value="brand" spellcheck="false" autocomplete="off">
+      </div>
+    </div>
+    <pre id="exportCode" class="code" tabindex="0"></pre>
+    <div class="row">
+      <button id="copyExportBtn" class="btn btn-sm btn-primary" type="button" data-i18n="copyCode">Copiaza codul</button>
+      <button id="downloadExportBtn" class="btn btn-sm" type="button" data-i18n="downloadFile">Descarca</button>
+    </div>
+    <p id="exportStatus" class="status" role="status" hidden></p>
+  </section>
+
+  <!-- despre -->
+  <div class="section-head" id="sec-about">
+    <h2 data-i18n="aboutTitle">Despre aplicatie</h2>
+  </div>
+  <section class="panel">
+    <p data-i18n="aboutText">Palette Studio este un singur fisier HTML.</p>
+    <div class="about-grid">
+      <div class="about-block">
+        <h4 data-i18n="aboutPrivacyTitle">Confidentialitate</h4>
+        <p data-i18n="aboutPrivacy">Imaginile sunt decode in memoria paginii si nu sunt incarcate nicaieri.</p>
+      </div>
+      <div class="about-block">
+        <h4 data-i18n="aboutLimitsTitle">Limite oneste</h4>
+        <p data-i18n="aboutLimits">Extragerea paletei depinde de iluminarea fotografiei.</p>
+      </div>
+      <div class="about-block">
+        <h4 data-i18n="aboutKeysTitle">Scurtaturi</h4>
+        <ul>
+          <li><span class="kbd">Ctrl</span> + <span class="kbd">Z</span> <span data-i18n="aboutKeyUndo">Anuleaza ultima actiune</span></li>
+          <li><span class="kbd">R</span> <span data-i18n="aboutKeyRandom">Culoare aleatoare</span></li>
+          <li><span class="kbd">C</span> <span data-i18n="aboutKeyCopy">Copiaza codul hex</span></li>
+        </ul>
+        <p style="margin-top:8px"><span class="badge" id="versionBadge">v1</span> <a href="https://github.com/TekiDeki/Palette-Studio" target="_blank" rel="noopener noreferrer" data-i18n="aboutSource">Codul sursa</a></p>
+      </div>
+    </div>
+    <p class="hint" style="margin-top:14px" data-i18n="aboutLicense">Licenta Apache-2.0. Codul sursa este public pe GitHub.</p>
+    <p class="hint" style="margin-top:6px"><a href="https://paypal.me/TekiDeki" target="_blank" rel="noopener noreferrer" data-i18n="aboutSupport">Sustine proiectul</a></p>
+  </section>
+
+  <footer class="foot">
+    <span>Palette Studio · TekiDeki · Vrsac</span>
+    <a href="https://freehtml.dev" target="_blank" rel="noopener noreferrer">freehtml.dev</a>
+    <a href="https://github.com/TekiDeki/Palette-Studio" target="_blank" rel="noopener noreferrer">GitHub</a>
+  </footer>
+</main>
+
+<script>/* Palette Studio · TekiDeki - colour engine
+ * SPDX-License-Identifier: Apache-2.0
+ * Copyright 2026 Kristian Mario Miskovic (TekiDeki)
+ *
+ * Loaded twice on purpose: as a plain <script> in the browser (where it fills
+ * window.TD) and with require() in Node, so the tests exercise exactly the
+ * code the app ships.
+ */
+(function (root) {
+  'use strict';
+
+  var TD = root.TD || (root.TD = {});
+
+  /* ---------------------------------------------------------------- input */
+
+  function clamp(value, min, max) {
+    return value < min ? min : value > max ? max : value;
+  }
+
+  function round(value, digits) {
+    var factor = Math.pow(10, digits || 0);
+    return Math.round(value * factor) / factor;
+  }
+
+  /* Accepts #rgb, #rgba, #rrggbb, #rrggbbaa and the bare forms. */
+  function parseHex(input) {
+    if (typeof input !== 'string') return null;
+    var hex = input.trim().replace(/^#/, '');
+    if (!/^[0-9a-fA-F]+$/.test(hex)) return null;
+    if (hex.length === 3 || hex.length === 4) {
+      hex = hex.split('').map(function (c) { return c + c; }).join('');
+    }
+    if (hex.length !== 6 && hex.length !== 8) return null;
+    return {
+      r: parseInt(hex.slice(0, 2), 16),
+      g: parseInt(hex.slice(2, 4), 16),
+      b: parseInt(hex.slice(4, 6), 16),
+      a: hex.length === 8 ? round(parseInt(hex.slice(6, 8), 16) / 255, 3) : 1
+    };
+  }
+
+  function rgbToHex(rgb) {
+    function part(value) {
+      var out = clamp(Math.round(value), 0, 255).toString(16);
+      return out.length === 1 ? '0' + out : out;
+    }
+    var hex = '#' + part(rgb.r) + part(rgb.g) + part(rgb.b);
+    if (rgb.a !== undefined && rgb.a !== null && rgb.a < 1) {
+      hex += part(rgb.a * 255);
+    }
+    return hex;
+  }
+
+  function normalizeRgb(rgb) {
+    return {
+      r: clamp(Math.round(rgb.r), 0, 255),
+      g: clamp(Math.round(rgb.g), 0, 255),
+      b: clamp(Math.round(rgb.b), 0, 255),
+      a: rgb.a === undefined || rgb.a === null ? 1 : clamp(rgb.a, 0, 1)
+    };
+  }
+
+  /* ------------------------------------------------------------ rrgb/hsl */
+
+  function rgbToHsl(rgb) {
+    var r = clamp(rgb.r, 0, 255) / 255;
+    var g = clamp(rgb.g, 0, 255) / 255;
+    var b = clamp(rgb.b, 0, 255) / 255;
+    var max = Math.max(r, g, b);
+    var min = Math.min(r, g, b);
+    var delta = max - min;
+    var h = 0;
+    if (delta !== 0) {
+      if (max === r) h = ((g - b) / delta) % 6;
+      else if (max === g) h = (b - r) / delta + 2;
+      else h = (r - g) / delta + 4;
+      h *= 60;
+      if (h < 0) h += 360;
+    }
+    var l = (max + min) / 2;
+    var s = delta === 0 ? 0 : delta / (1 - Math.abs(2 * l - 1));
+    return { h: round(h, 1), s: round(s * 100, 1), l: round(l * 100, 1) };
+  }
+
+  function hslToRgb(hsl) {
+    var h = ((hsl.h % 360) + 360) % 360;
+    var s = clamp(hsl.s, 0, 100) / 100;
+    var l = clamp(hsl.l, 0, 100) / 100;
+    var c = (1 - Math.abs(2 * l - 1)) * s;
+    var x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+    var m = l - c / 2;
+    var rgb;
+    if (h < 60) rgb = [c, x, 0];
+    else if (h < 120) rgb = [x, c, 0];
+    else if (h < 180) rgb = [0, c, x];
+    else if (h < 240) rgb = [0, x, c];
+    else if (h < 300) rgb = [x, 0, c];
+    else rgb = [c, 0, x];
+    return normalizeRgb({
+      r: (rgb[0] + m) * 255,
+      g: (rgb[1] + m) * 255,
+      b: (rgb[2] + m) * 255,
+      a: hsl.a === undefined ? 1 : hsl.a
+    });
+  }
+
+  /* ------------------------------------------------------------ rrgb/hsv */
+
+  function rgbToHsv(rgb) {
+    var r = clamp(rgb.r, 0, 255) / 255;
+    var g = clamp(rgb.g, 0, 255) / 255;
+    var b = clamp(rgb.b, 0, 255) / 255;
+    var max = Math.max(r, g, b);
+    var min = Math.min(r, g, b);
+    var delta = max - min;
+    var h = 0;
+    if (delta !== 0) {
+      if (max === r) h = ((g - b) / delta) % 6;
+      else if (max === g) h = (b - r) / delta + 2;
+      else h = (r - g) / delta + 4;
+      h *= 60;
+      if (h < 0) h += 360;
+    }
+    return {
+      h: round(h, 1),
+      s: round(max === 0 ? 0 : (delta / max) * 100, 1),
+      v: round(max * 100, 1)
+    };
+  }
+
+  function hsvToRgb(hsv) {
+    var h = ((hsv.h % 360) + 360) % 360;
+    var s = clamp(hsv.s, 0, 100) / 100;
+    var v = clamp(hsv.v, 0, 100) / 100;
+    var c = v * s;
+    var x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+    var m = v - c;
+    var rgb;
+    if (h < 60) rgb = [c, x, 0];
+    else if (h < 120) rgb = [x, c, 0];
+    else if (h < 180) rgb = [0, c, x];
+    else if (h < 240) rgb = [0, x, c];
+    else if (h < 300) rgb = [x, 0, c];
+    else rgb = [c, 0, x];
+    return normalizeRgb({
+      r: (rgb[0] + m) * 255,
+      g: (rgb[1] + m) * 255,
+      b: (rgb[2] + m) * 255,
+      a: hsv.a === undefined ? 1 : hsv.a
+    });
+  }
+
+  /* ------------------------------------------------------------ rrgb/cmyk */
+
+  function rgbToCmyk(rgb) {
+    var r = clamp(rgb.r, 0, 255) / 255;
+    var g = clamp(rgb.g, 0, 255) / 255;
+    var b = clamp(rgb.b, 0, 255) / 255;
+    var k = 1 - Math.max(r, g, b);
+    if (k >= 1) return { c: 0, m: 0, y: 0, k: 100 };
+    return {
+      c: round(((1 - r - k) / (1 - k)) * 100, 1),
+      m: round(((1 - g - k) / (1 - k)) * 100, 1),
+      y: round(((1 - b - k) / (1 - k)) * 100, 1),
+      k: round(k * 100, 1)
+    };
+  }
+
+  function cmykToRgb(cmyk) {
+    var c = clamp(cmyk.c, 0, 100) / 100;
+    var m = clamp(cmyk.m, 0, 100) / 100;
+    var y = clamp(cmyk.y, 0, 100) / 100;
+    var k = clamp(cmyk.k, 0, 100) / 100;
+    return normalizeRgb({
+      r: 255 * (1 - c) * (1 - k),
+      g: 255 * (1 - m) * (1 - k),
+      b: 255 * (1 - y) * (1 - k),
+      a: cmyk.a === undefined ? 1 : cmyk.a
+    });
+  }
+
+  /* ------------------------------------------------------------- WCAG 2.x */
+
+  function channelToLinear(value) {
+    var c = clamp(value, 0, 255) / 255;
+    return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+  }
+
+  function relativeLuminance(rgb) {
+    return 0.2126 * channelToLinear(rgb.r)
+      + 0.7152 * channelToLinear(rgb.g)
+      + 0.0722 * channelToLinear(rgb.b);
+  }
+
+  function contrastRatio(a, b) {
+    var la = relativeLuminance(a);
+    var lb = relativeLuminance(b);
+    var lighter = Math.max(la, lb);
+    var darker = Math.min(la, lb);
+    return round((lighter + 0.05) / (darker + 0.05), 2);
+  }
+
+  function wcagLevel(ratio, large) {
+    if (ratio >= 7 && !large) return 'AAA';
+    if (ratio >= 4.5 && !large) return 'AA';
+    if (ratio >= 4.5 && large) return 'AAA';
+    if (ratio >= 3 && large) return 'AA';
+    return 'fail';
+  }
+
+  /* ------------------------------------------------------ colour blindness */
+  /* Machado, Oliveira and Fernandes (2009), "A Physiologically-based Model
+   * for Simulation of Color Vision Deficiency", IEEE TVCG 15(6):1291-1298.
+   * Table 1 of the authors' data page, all eleven published severity steps
+   * for each type: 1.0 is the complete form (dichromacy), 0.5 is the common
+   * anomalous trichromacy, 0.0 is the identity matrix.
+   *
+   * The matrices are applied in linear RGB, not on the gamma encoded values:
+   * every row sums to 1, which is exactly what keeps white white and greys
+   * grey. Applying them to sRGB values instead is a common bug that shifts
+   * every hue and darkens the midtones. */
+
+  var CVD_SEVERITIES = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1];
+
+  /* Flat tables: 11 severities x 9 coefficients, row major. */
+  var CVD_TABLES = {
+    protanomaly: [1.0,0.0,-0.0,0.0,1.0,0.0,-0.0,-0.0,1.0,0.856167,0.182038,-0.038205,0.029342,0.955115,0.015544,-0.00288,-0.001563,1.004443,0.734766,0.334872,-0.069637,0.05184,0.919198,0.028963,-0.004928,-0.004209,1.009137,0.630323,0.465641,-0.095964,0.069181,0.890046,0.040773,-0.006308,-0.007724,1.014032,0.539009,0.579343,-0.118352,0.082546,0.866121,0.051332,-0.007136,-0.011959,1.019095,0.458064,0.679578,-0.137642,0.092785,0.846313,0.060902,-0.007494,-0.016807,1.024301,0.38545,0.769005,-0.154455,0.100526,0.829802,0.069673,-0.007442,-0.02219,1.029632,0.319627,0.849633,-0.169261,0.106241,0.815969,0.07779,-0.007025,-0.028051,1.035076,0.259411,0.923008,-0.18242,0.110296,0.80434,0.085364,-0.006276,-0.034346,1.040622,0.203876,0.990338,-0.194214,0.112975,0.794542,0.092483,-0.005222,-0.041043,1.046265,0.152286,1.052583,-0.204868,0.114503,0.786281,0.099216,-0.003882,-0.048116,1.051998],
+    deuteranomaly: [1.0,0.0,-0.0,0.0,1.0,0.0,-0.0,-0.0,1.0,0.866435,0.177704,-0.044139,0.049567,0.939063,0.01137,-0.003453,0.007233,0.99622,0.760729,0.319078,-0.079807,0.090568,0.889315,0.020117,-0.006027,0.013325,0.992702,0.675425,0.43385,-0.109275,0.125303,0.847755,0.026942,-0.00795,0.018572,0.989378,0.605511,0.52856,-0.134071,0.155318,0.812366,0.032316,-0.009376,0.023176,0.9862,0.547494,0.607765,-0.155259,0.181692,0.781742,0.036566,-0.01041,0.027275,0.983136,0.498864,0.674741,-0.173604,0.205199,0.754872,0.039929,-0.011131,0.030969,0.980162,0.457771,0.731899,-0.18967,0.226409,0.731012,0.042579,-0.011595,0.034333,0.977261,0.422823,0.781057,-0.203881,0.245752,0.709602,0.044646,-0.011843,0.037423,0.974421,0.392952,0.82361,-0.216562,0.263559,0.69021,0.046232,-0.01191,0.040281,0.97163,0.367322,0.860646,-0.227968,0.280085,0.672501,0.047413,-0.01182,0.04294,0.968881],
+    tritanomaly: [1.0,0.0,-0.0,0.0,1.0,0.0,-0.0,-0.0,1.0,0.92667,0.092514,-0.019184,0.021191,0.964503,0.014306,0.008437,0.054813,0.93675,0.89572,0.13333,-0.02905,0.029997,0.9454,0.024603,0.013027,0.104707,0.882266,0.905871,0.127791,-0.033662,0.026856,0.941251,0.031893,0.01341,0.148296,0.838294,0.948035,0.08949,-0.037526,0.014364,0.946792,0.038844,0.010853,0.193991,0.795156,1.017277,0.027029,-0.044306,-0.006113,0.958479,0.047634,0.006379,0.248708,0.744913,1.104996,-0.046633,-0.058363,-0.032137,0.971635,0.060503,0.001336,0.317922,0.680742,1.193214,-0.109812,-0.083402,-0.058496,0.97941,0.079086,-0.002346,0.403492,0.598854,1.257728,-0.139648,-0.118081,-0.078003,0.975409,0.102594,-0.003316,0.501214,0.502102,1.278864,-0.125333,-0.153531,-0.084748,0.957674,0.127074,-0.000989,0.601151,0.399838,1.255528,-0.076749,-0.178779,-0.078411,0.930809,0.147602,0.004733,0.691367,0.3039]
+  };
+
+  /* Which published table serves each named condition, and at which severity. */
+  var CVD_CONDITIONS = {
+    protanopia: ['protanomaly', 1],
+    protanomaly: ['protanomaly', 0.5],
+    deuteranopia: ['deuteranomaly', 1],
+    deuteranomaly: ['deuteranomaly', 0.5],
+    tritanopia: ['tritanomaly', 1],
+    tritanomaly: ['tritanomaly', 0.5]
+  };
+
+  function srgbToLinear(value) {
+    return channelToLinear(value);
+  }
+
+  function multiply3(matrix, vector) {
+    return [
+      matrix[0][0] * vector[0] + matrix[0][1] * vector[1] + matrix[0][2] * vector[2],
+      matrix[1][0] * vector[0] + matrix[1][1] * vector[1] + matrix[1][2] * vector[2],
+      matrix[2][0] * vector[0] + matrix[2][1] * vector[1] + matrix[2][2] * vector[2]
+    ];
+  }
+
+  function linearToSrgb(value) {
+    var c = clamp(value, 0, 1);
+    return c <= 0.0031308 ? c * 12.92 : 1.055 * Math.pow(c, 1 / 2.4) - 0.055;
+  }
+
+  /* Reads the published matrix for a severity, interpolating between the two
+   * nearest published steps exactly as the authors' tutorial prescribes. */
+  function cvdMatrix(type, severity) {
+    var table = CVD_TABLES[type];
+    if (!table) return null;
+    var wanted = clamp(severity === undefined ? 1 : severity, 0, 1);
+    var position = wanted * 10;
+    var lower = Math.floor(position);
+    var upper = Math.ceil(position);
+    var weight = position - lower;
+    var matrix = [];
+    for (var i = 0; i < 9; i++) {
+      var a = table[lower * 9 + i];
+      var b = table[upper * 9 + i];
+      matrix.push(a + (b - a) * weight);
+    }
+    return [
+      [matrix[0], matrix[1], matrix[2]],
+      [matrix[3], matrix[4], matrix[5]],
+      [matrix[6], matrix[7], matrix[8]]
+    ];
+  }
+
+  /* severity is optional: 1 is the complete form, 0 leaves the colour alone. */
+  function simulateCvd(rgb, type, severity) {
+    var condition = CVD_CONDITIONS[type];
+    if (!condition) return normalizeRgb(rgb);
+    var matrix = cvdMatrix(condition[0], severity === undefined ? condition[1] : severity);
+    if (!matrix) return normalizeRgb(rgb);
+    var linear = [
+      srgbToLinear(rgb.r),
+      srgbToLinear(rgb.g),
+      srgbToLinear(rgb.b)
+    ];
+    var transformed = multiply3(matrix, linear);
+    return normalizeRgb({
+      r: linearToSrgb(transformed[0]) * 255,
+      g: linearToSrgb(transformed[1]) * 255,
+      b: linearToSrgb(transformed[2]) * 255,
+      a: 1
+    });
+  }
+
+  var CVD_TYPES = ['protanopia', 'deuteranopia', 'tritanopia', 'protanomaly', 'deuteranomaly', 'tritanomaly'];
+
+  /* ----------------------------------------------------------------- CIE */
+  /* D65 white point, CIE 1931 2 degree observer. */
+
+  var D65 = { x: 95.047, y: 100.0, z: 108.883 };
+
+  function rgbToXyz(rgb) {
+    var r = channelToLinear(rgb.r);
+    var g = channelToLinear(rgb.g);
+    var b = channelToLinear(rgb.b);
+    return {
+      x: (r * 0.4124564 + g * 0.3575761 + b * 0.1804375) * 100,
+      y: (r * 0.2126729 + g * 0.7151522 + b * 0.0721750) * 100,
+      z: (r * 0.0193339 + g * 0.1191920 + b * 0.9503041) * 100
+    };
+  }
+
+  function labF(t) {
+    return t > 0.008856 ? Math.pow(t, 1 / 3) : (903.3 * t + 16) / 116;
+  }
+
+  function rgbToLab(rgb) {
+    var xyz = rgbToXyz(rgb);
+    var fx = labF(xyz.x / D65.x);
+    var fy = labF(xyz.y / D65.y);
+    var fz = labF(xyz.z / D65.z);
+    return {
+      l: round(116 * fy - 16, 2),
+      a: round(500 * (fx - fy), 2),
+      b: round(200 * (fy - fz), 2)
+    };
+  }
+
+  function labDeltaE76(lab1, lab2) {
+    return Math.sqrt(
+      Math.pow(lab1.l - lab2.l, 2) +
+      Math.pow(lab1.a - lab2.a, 2) +
+      Math.pow(lab1.b - lab2.b, 2)
+    );
+  }
+
+  /* ------------------------------------------------------------- harmonies */
+
+  var HARMONY_DEGREES = {
+    complementary: [0, 180],
+    analogous: [-30, 0, 30],
+    triadic: [0, 120, 240],
+    tetradic: [0, 90, 180, 270],
+    split: [0, 150, 210],
+    square: [0, 90, 180, 270]
+  };
+
+  var HARMONY_ORDER = ['complementary', 'analogous', 'triadic', 'tetradic', 'split', 'square'];
+
+  function harmony(name, rgb, options) {
+    var degrees = HARMONY_DEGREES[name];
+    if (!degrees) return [];
+    var hsl = rgbToHsl(rgb);
+    var opts = options || {};
+    var saturationShift = typeof opts.saturationShift === 'number' ? opts.saturationShift : 0;
+    var lightnessShift = typeof opts.lightnessShift === 'number' ? opts.lightnessShift : 0;
+    return degrees.map(function (offset, index) {
+      var spread = opts.spread && degrees.length > 1 ? (index - (degrees.length - 1) / 2) * opts.spread : 0;
+      return hslToRgb({
+        h: hsl.h + offset,
+        s: clamp(hsl.s + saturationShift, 0, 100),
+        l: clamp(hsl.l + lightnessShift + spread, 0, 100)
+      });
+    });
+  }
+
+  function monochromatic(rgb, count) {
+    var steps = clamp(Math.round(count || 5), 2, 9);
+    var hsl = rgbToHsl(rgb);
+    var out = [];
+    for (var i = 0; i < steps; i++) {
+      var l = 92 - (i * (84 / (steps - 1)));
+      out.push(hslToRgb({ h: hsl.h, s: clamp(hsl.s, 8, 100), l: l }));
+    }
+    return out;
+  }
+
+  function mix(rgb1, rgb2, amount) {
+    var t = clamp(amount === undefined ? 0.5 : amount, 0, 1);
+    return normalizeRgb({
+      r: rgb1.r + (rgb2.r - rgb1.r) * t,
+      g: rgb1.g + (rgb2.g - rgb1.g) * t,
+      b: rgb1.b + (rgb2.b - rgb1.b) * t,
+      a: rgb1.a + ((rgb2.a === undefined ? 1 : rgb2.a) - (rgb1.a === undefined ? 1 : rgb1.a)) * t
+    });
+  }
+
+  /* --------------------------------------------------------------- strings */
+
+  function formatRgb(rgb) {
+    var base = 'rgb(' + Math.round(rgb.r) + ', ' + Math.round(rgb.g) + ', ' + Math.round(rgb.b) + ')';
+    if (rgb.a !== undefined && rgb.a !== null && rgb.a < 1) {
+      return 'rgba(' + Math.round(rgb.r) + ', ' + Math.round(rgb.g) + ', ' + Math.round(rgb.b) + ', ' + round(rgb.a, 2) + ')';
+    }
+    return base;
+  }
+
+  function formatHsl(hsl) {
+    return 'hsl(' + Math.round(hsl.h) + ', ' + Math.round(hsl.s) + '%, ' + Math.round(hsl.l) + '%)';
+  }
+
+  /* Nearest accessible colour on the lightness axis, WCAG 2.x.
+   * Both directions are scanned: a light grey on white has to get darker, a
+   * dark grey on white has to get lighter, and the smaller lightness change
+   * wins. If neither end of the axis reaches the required ratio (possible on
+   * mid-grey backgrounds with AAA) the extreme with the better ratio is used
+   * and the result is reported as unreachable. */
+  function nearestAccessible(rgb, target, minimum) {
+    var required = minimum || 4.5;
+    var hsl = rgbToHsl(normalizeRgb(rgb));
+    var background = normalizeRgb(target);
+    var candidates = [];
+    [1, -1].forEach(function (direction) {
+      for (var step = 0; step <= 100; step++) {
+        var lightness = clamp(hsl.l + direction * step, 0, 100);
+        var candidate = hslToRgb({ h: hsl.h, s: hsl.s, l: lightness });
+        var ratio = contrastRatio(candidate, background);
+        if (ratio >= required) {
+          candidates.push({
+            rgb: candidate,
+            hex: rgbToHex(candidate),
+            lightness: lightness,
+            shift: Math.abs(lightness - hsl.l),
+            direction: direction > 0 ? 'lighter' : 'darker',
+            ratio: ratio,
+            reachable: true
+          });
+          break;
+        }
+      }
+    });
+    if (candidates.length === 0) {
+      var extremes = [0, 100].map(function (lightness) {
+        var candidate = hslToRgb({ h: hsl.h, s: hsl.s, l: lightness });
+        return {
+          rgb: candidate,
+          hex: rgbToHex(candidate),
+          lightness: lightness,
+          shift: Math.abs(lightness - hsl.l),
+          direction: lightness > hsl.l ? 'lighter' : 'darker',
+          ratio: contrastRatio(candidate, background),
+          reachable: false
+        };
+      });
+      extremes.sort(function (a, b) {
+        return b.ratio - a.ratio || a.shift - b.shift;
+      });
+      return extremes[0];
+    }
+    candidates.sort(function (a, b) {
+      return a.shift - b.shift || b.ratio - a.ratio;
+    });
+    return candidates[0];
+  }
+
+  TD.clamp = clamp;
+  TD.round = round;
+  TD.parseHex = parseHex;
+  TD.rgbToHex = rgbToHex;
+  TD.normalizeRgb = normalizeRgb;
+  TD.rgbToHsl = rgbToHsl;
+  TD.hslToRgb = hslToRgb;
+  TD.rgbToHsv = rgbToHsv;
+  TD.hsvToRgb = hsvToRgb;
+  TD.rgbToCmyk = rgbToCmyk;
+  TD.cmykToRgb = cmykToRgb;
+  TD.channelToLinear = channelToLinear;
+  TD.relativeLuminance = relativeLuminance;
+  TD.contrastRatio = contrastRatio;
+  TD.wcagLevel = wcagLevel;
+  TD.srgbToLinear = srgbToLinear;
+  TD.linearToSrgb = linearToSrgb;
+  TD.cvdMatrix = cvdMatrix;
+  TD.CVD_SEVERITIES = CVD_SEVERITIES;
+  TD.CVD_CONDITIONS = CVD_CONDITIONS;
+  TD.simulateCvd = simulateCvd;
+  TD.CVD_TYPES = CVD_TYPES;
+  TD.rgbToXyz = rgbToXyz;
+  TD.rgbToLab = rgbToLab;
+  TD.labDeltaE76 = labDeltaE76;
+  TD.HARMONY_ORDER = HARMONY_ORDER;
+  TD.HARMONY_DEGREES = HARMONY_DEGREES;
+  TD.harmony = harmony;
+  TD.monochromatic = monochromatic;
+  TD.mix = mix;
+  TD.formatRgb = formatRgb;
+  TD.formatHsl = formatHsl;
+  TD.nearestAccessible = nearestAccessible;
+
+  if (typeof module !== 'undefined' && module.exports) module.exports = TD;
+})(typeof window !== 'undefined' ? window : global);</script>
+<script>/* Palette Studio · TekiDeki - palette engine
+ * SPDX-License-Identifier: Apache-2.0
+ * Copyright 2026 Kristian Mario Miskovic (TekiDeki)
+ *
+ * Extraction, naming, export and gradient generation. Deterministic by design:
+ * the same pixels and the same settings always produce the same palette, which
+ * is what makes the Node tests meaningful.
+ */
+(function (root) {
+  'use strict';
+
+  var TD = root.TD || (root.TD = {});
+
+  /* -------------------------------------------------------------- sampling */
+
+  var MAX_SAMPLES = 40000;
+
+  /* Deterministic 32-bit LCG, same output on every machine. */
+  function makeRandom(seed) {
+    var state = (seed >>> 0) || 1;
+    return function () {
+      state = (Math.imul(state, 1664525) + 1013904223) >>> 0;
+      return state / 4294967296;
+    };
+  }
+
+  /* Skips fully transparent pixels and samples on a grid so the pixel count
+   * stays bounded for large photos. Returns plain {r,g,b} objects. */
+  function samplePixels(data, width, height, options) {
+    var opts = options || {};
+    var maxSamples = opts.maxSamples || MAX_SAMPLES;
+    var step = Math.max(1, Math.ceil(Math.sqrt((width * height) / maxSamples)));
+    var samples = [];
+    for (var y = 0; y < height; y += step) {
+      for (var x = 0; x < width; x += step) {
+        var index = (y * width + x) * 4;
+        if (data[index + 3] < 8) continue;
+        samples.push({ r: data[index], g: data[index + 1], b: data[index + 2] });
+      }
+    }
+    return samples;
+  }
+
+  /* Quantising to a coarse grid keeps k-means fast and stable: pixels that
+   * differ by 1/32 of a channel cannot belong to different clusters anyway. */
+  function quantize(samples, bits) {
+    var shift = 8 - (bits || 5);
+    var mask = ((1 << (bits || 5)) - 1) << shift;
+    var buckets = new Map();
+    for (var i = 0; i < samples.length; i++) {
+      var sample = samples[i];
+      var key = ((sample.r & mask) << 10) | ((sample.g & mask) << 5) | (sample.b & mask);
+      var bucket = buckets.get(key);
+      if (bucket) {
+        bucket.r += sample.r;
+        bucket.g += sample.g;
+        bucket.b += sample.b;
+        bucket.count += 1;
+      } else {
+        buckets.set(key, { r: sample.r, g: sample.g, b: sample.b, count: 1 });
+      }
+    }
+    var out = [];
+    buckets.forEach(function (bucket) {
+      out.push({
+        r: bucket.r / bucket.count,
+        g: bucket.g / bucket.count,
+        b: bucket.b / bucket.count,
+        count: bucket.count
+      });
+    });
+    return out;
+  }
+
+  function distanceSquared(a, b) {
+    var dr = a.r - b.r;
+    var dg = a.g - b.g;
+    var db = a.b - b.b;
+    return dr * dr + dg * dg + db * db;
+  }
+
+  /* k-means++ seeding with the seeded LCG, then Lloyd iterations. */
+  function kmeans(points, k, seed, iterations) {
+    var total = points.length;
+    if (total === 0) return [];
+    var wanted = Math.min(Math.max(1, k), total);
+    var random = makeRandom(seed);
+    var centroids = [];
+    var first = Math.floor(random() * total);
+    centroids.push({ r: points[first].r, g: points[first].g, b: points[first].b, count: 0 });
+
+    var closest = new Array(total);
+    for (var i = 0; i < total; i++) closest[i] = distanceSquared(points[i], centroids[0]);
+
+    while (centroids.length < wanted) {
+      var sum = 0;
+      for (var j = 0; j < total; j++) sum += closest[j];
+      var pick = random() * sum;
+      var index = 0;
+      if (sum > 0) {
+        for (index = 0; index < total; index++) {
+          pick -= closest[index];
+          if (pick <= 0) break;
+        }
+        if (index >= total) index = total - 1;
+      } else {
+        index = centroids.length % total;
+      }
+      centroids.push({ r: points[index].r, g: points[index].g, b: points[index].b, count: 0 });
+      for (var m = 0; m < total; m++) {
+        var d = distanceSquared(points[m], centroids[centroids.length - 1]);
+        if (d < closest[m]) closest[m] = d;
+      }
+    }
+
+    var maxIterations = iterations || 20;
+    for (var iteration = 0; iteration < maxIterations; iteration++) {
+      var sums = centroids.map(function () { return { r: 0, g: 0, b: 0, count: 0 }; });
+      for (var p = 0; p < total; p++) {
+        var point = points[p];
+        var best = 0;
+        var bestDistance = Infinity;
+        for (var c = 0; c < centroids.length; c++) {
+          var distance = distanceSquared(point, centroids[c]);
+          if (distance < bestDistance) {
+            bestDistance = distance;
+            best = c;
+          }
+        }
+        sums[best].r += point.r * point.count;
+        sums[best].g += point.g * point.count;
+        sums[best].b += point.b * point.count;
+        sums[best].count += point.count;
+      }
+      var moved = 0;
+      for (var q = 0; q < centroids.length; q++) {
+        if (sums[q].count === 0) continue;
+        var nextR = sums[q].r / sums[q].count;
+        var nextG = sums[q].g / sums[q].count;
+        var nextB = sums[q].b / sums[q].count;
+        moved += Math.abs(nextR - centroids[q].r) + Math.abs(nextG - centroids[q].g) + Math.abs(nextB - centroids[q].b);
+        centroids[q].r = nextR;
+        centroids[q].g = nextG;
+        centroids[q].b = nextB;
+        centroids[q].count = sums[q].count;
+      }
+      if (moved < 0.5) break;
+    }
+
+    var used = centroids.filter(function (centroid) { return centroid.count > 0; });
+    /* Stable order: biggest cluster first, then lighter, then warmer hue.
+     * Sorting by a computed key alone would make ties depend on the input
+     * order, which is fine because the input order is already deterministic. */
+    used.sort(function (a, b) {
+      if (b.count !== a.count) return b.count - a.count;
+      var ha = TD.rgbToHsl(TD.normalizeRgb(a)).h;
+      var hb = TD.rgbToHsl(TD.normalizeRgb(b)).h;
+      return ha - hb;
+    });
+    return used;
+  }
+
+  /* Returns [{ rgb, hex, share }] sorted by share, share in percent.
+   * Shares are rounded with the largest remainder method so the column always
+   * adds up to exactly 100.0 instead of 99.9 or 100.2. */
+  function extractPalette(samples, options) {
+    var opts = options || {};
+    var k = TD.clamp(Math.round(opts.k || 6), 1, 12);
+    var seed = opts.seed === undefined ? 20260101 : opts.seed;
+    var quantized = quantize(samples, opts.bits || 5);
+    if (quantized.length === 0) return [];
+    var clusters = kmeans(quantized, k, seed, opts.iterations);
+    var totalPixels = 0;
+    for (var i = 0; i < quantized.length; i++) totalPixels += quantized[i].count;
+
+    var entries = clusters.map(function (cluster) {
+      var rgb = TD.normalizeRgb(cluster);
+      return {
+        rgb: rgb,
+        hex: TD.rgbToHex(rgb),
+        exact: totalPixels > 0 ? (cluster.count / totalPixels) * 1000 : 0
+      };
+    });
+
+    if (totalPixels > 0) {
+      var floors = entries.map(function (entry) { return Math.floor(entry.exact); });
+      var assigned = floors.reduce(function (sum, value) { return sum + value; }, 0);
+      var leftovers = 1000 - assigned;
+      var order = entries
+        .map(function (entry, index) { return { index: index, fraction: entry.exact - floors[index] }; })
+        .sort(function (a, b) { return b.fraction - a.fraction || a.index - b.index; });
+      var cursor = 0;
+      for (var j = 0; j < leftovers; j++) {
+        floors[order[cursor].index] += 1;
+        cursor = (cursor + 1) % order.length;
+      }
+      entries.forEach(function (entry, index) {
+        entry.share = TD.round(floors[index] / 10, 1);
+      });
+    } else {
+      entries.forEach(function (entry) { entry.share = 0; });
+    }
+
+    return entries.map(function (entry) {
+      return { rgb: entry.rgb, hex: entry.hex, share: entry.share };
+    });
+  }
+
+  /* ---------------------------------------------------------------- naming */
+  /* Key + approximate centre. The label itself comes from the locale files
+   * (colorName_<key>), so the table below never carries translatable text. */
+
+  var NAMED_COLORS = [
+    ['black', 0, 0, 0], ['white', 255, 255, 255], ['gray', 128, 128, 128],
+    ['silver', 192, 192, 192], ['charcoal', 54, 69, 79], ['navy', 0, 0, 128],
+    ['blue', 0, 87, 184], ['azure', 0, 127, 255], ['teal', 0, 128, 128],
+    ['turquoise', 64, 224, 208], ['green', 34, 139, 34], ['olive', 128, 128, 0],
+    ['lime', 50, 205, 50], ['emerald', 80, 200, 120], ['mint', 152, 255, 152],
+    ['yellow', 255, 214, 0], ['gold', 255, 196, 0], ['amber', 255, 176, 0],
+    ['orange', 255, 140, 0], ['tangerine', 242, 133, 27], ['coral', 255, 127, 80],
+    ['red', 214, 40, 40], ['crimson', 220, 20, 60], ['burgundy', 128, 0, 32],
+    ['maroon', 128, 0, 0], ['pink', 255, 105, 180], ['magenta', 255, 0, 255],
+    ['violet', 138, 43, 226], ['purple', 128, 0, 128], ['indigo', 75, 0, 130],
+    ['lavender', 200, 190, 240], ['beige', 245, 245, 220], ['sand', 226, 205, 166],
+    ['brown', 139, 69, 19], ['chocolate', 210, 105, 30], ['coffee', 111, 78, 55],
+    ['cyan', 0, 183, 235], ['sky', 135, 206, 235], ['ice', 224, 247, 250],
+    ['rose', 255, 0, 127], ['salmon', 250, 128, 114], ['peach', 255, 203, 164]
+  ];
+
+  var NAMED_LABS = null;
+
+  function namedLabs() {
+    if (!NAMED_LABS) {
+      NAMED_LABS = NAMED_COLORS.map(function (entry) {
+        return { key: entry[0], lab: TD.rgbToLab({ r: entry[1], g: entry[2], b: entry[3] }) };
+      });
+    }
+    return NAMED_LABS;
+  }
+
+  /* Returns { key, distance } with distance in CIE Lab units (deltaE76). */
+  function nearestColorName(rgb) {
+    var lab = TD.rgbToLab(TD.normalizeRgb(rgb));
+    var best = null;
+    var list = namedLabs();
+    for (var i = 0; i < list.length; i++) {
+      var distance = TD.labDeltaE76(lab, list[i].lab);
+      if (!best || distance < best.distance) best = { key: list[i].key, distance: distance };
+    }
+    return { key: best.key, distance: TD.round(best.distance, 1) };
+  }
+
+  /* -------------------------------------------------------------- gradients */
+
+  function gradientCss(stops, options) {
+    var opts = options || {};
+    var type = opts.type === 'radial' ? 'radial' : opts.type === 'conic' ? 'conic' : 'linear';
+    var angle = typeof opts.angle === 'number' ? Math.round(((opts.angle % 360) + 360) % 360) : 135;
+    var parts = stops.map(function (stop) {
+      var position = Math.round(TD.clamp(stop.position, 0, 100));
+      return TD.rgbToHex(stop.rgb) + ' ' + position + '%';
+    });
+    if (type === 'radial') return 'radial-gradient(circle at 50% 50%, ' + parts.join(', ') + ')';
+    if (type === 'conic') return 'conic-gradient(from ' + angle + 'deg at 50% 50%, ' + parts.join(', ') + ')';
+    return 'linear-gradient(' + angle + 'deg, ' + parts.join(', ') + ')';
+  }
+
+  function gradientSvg(stops, options) {
+    var opts = options || {};
+    var width = opts.width || 1200;
+    var height = opts.height || 675;
+    var angle = typeof opts.angle === 'number' ? Math.round(((opts.angle % 360) + 360) % 360) : 135;
+    var radians = (angle * Math.PI) / 180;
+    var x2 = TD.round(50 + Math.cos(radians) * 50, 2);
+    var y2 = TD.round(50 + Math.sin(radians) * 50, 2);
+    var x1 = TD.round(100 - x2, 2);
+    var y1 = TD.round(100 - y2, 2);
+    var type = opts.type === 'radial' ? 'radial' : 'linear';
+    var gradientTag = type === 'radial'
+      ? '<radialGradient id="g" cx="50%" cy="50%" r="70%">'
+      : '<linearGradient id="g" x1="' + x1 + '%" y1="' + y1 + '%" x2="' + x2 + '%" y2="' + y2 + '%">';
+    var stopsMarkup = stops.map(function (stop) {
+      return '<stop offset="' + Math.round(TD.clamp(stop.position, 0, 100)) + '%" stop-color="' + TD.rgbToHex(stop.rgb) + '"/>';
+    }).join('');
+    var paint = type === 'radial' ? 'url(#g)' : 'url(#g)';
+    return '<svg xmlns="http://www.w3.org/2000/svg" width="' + width + '" height="' + height + '" viewBox="0 0 ' + width + ' ' + height + '" role="img" aria-label="Gradient">'
+      + '<defs>' + gradientTag + stopsMarkup + '</' + type + 'Gradient></defs>'
+      + '<rect width="' + width + '" height="' + height + '" fill="' + paint + '"/>'
+      + '</svg>\n';
+  }
+
+  /* ------------------------------------------------------------ shade scale */
+
+  function shadeScale(rgb) {
+    var names = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950];
+    var white = { r: 255, g: 255, b: 255, a: 1 };
+    var black = { r: 0, g: 0, b: 0, a: 1 };
+    var source = TD.normalizeRgb(rgb);
+    var hsl = TD.rgbToHsl(source);
+    return names.map(function (step) {
+      /* Saturation follows one smooth curve on 0..1: it peaks near the base
+       * colour (so 500 stays close to what the user picked) and falls off
+       * towards both ends, so the scale never jumps between steps. */
+      var t = step / 950;
+      var bell = TD.clamp(1 - Math.pow((t - 0.52) / 0.55, 2), 0, 1);
+      var saturation = TD.clamp(hsl.s * (0.30 + 0.70 * bell), 0, 100);
+      var lightness = 97 - t * 92;
+      var mixed = TD.hslToRgb({ h: hsl.h, s: saturation, l: lightness });
+      return {
+        step: step,
+        rgb: mixed,
+        hex: TD.rgbToHex(mixed),
+        contrastOnWhite: TD.contrastRatio(mixed, white),
+        contrastOnBlack: TD.contrastRatio(mixed, black),
+        reference: TD.round(lightness, 1)
+      };
+    });
+  }
+
+  /* ---------------------------------------------------------------- export */
+
+  function paletteToCssVars(colors, prefix) {
+    var name = prefix || 'brand';
+    var lines = [':root {'];
+    colors.forEach(function (color, index) {
+      var hex = typeof color === 'string' ? color : color.hex;
+      var rgb = typeof color === 'string' ? TD.parseHex(color) : color.rgb;
+      lines.push('  --' + name + '-' + (index + 1) + ': ' + hex + ';');
+      lines.push('  --' + name + '-' + (index + 1) + '-rgb: ' + Math.round(rgb.r) + ' ' + Math.round(rgb.g) + ' ' + Math.round(rgb.b) + ';');
+    });
+    lines.push('}');
+    return lines.join('\n') + '\n';
+  }
+
+  function paletteToScss(colors, prefix) {
+    var name = prefix || 'brand';
+    var lines = [];
+    colors.forEach(function (color, index) {
+      var hex = typeof color === 'string' ? color : color.hex;
+      lines.push('$' + name + '-' + (index + 1) + ': ' + hex + ';');
+    });
+    return lines.join('\n') + '\n';
+  }
+
+  function paletteToTailwind(colors, prefix) {
+    var name = prefix || 'brand';
+    var lines = ['/** tailwind.config.js */', 'module.exports = {', '  theme: {', '    extend: {', '      colors: {', '        ' + name + ': {'];
+    colors.forEach(function (color, index) {
+      var hex = typeof color === 'string' ? color : color.hex;
+      lines.push("          '" + (index + 1) + "00': '" + hex + "',");
+    });
+    lines.push('        }');
+    lines.push('      }');
+    lines.push('    }');
+    lines.push('  }');
+    lines.push('};');
+    return lines.join('\n') + '\n';
+  }
+
+  function paletteToJson(colors, meta) {
+    var list = colors.map(function (color) {
+      var rgb = typeof color === 'string' ? TD.parseHex(color) : color.rgb;
+      var hex = typeof color === 'string' ? color : color.hex;
+      var hsl = TD.rgbToHsl(rgb);
+      var entry = {
+        hex: hex,
+        rgb: [Math.round(rgb.r), Math.round(rgb.g), Math.round(rgb.b)],
+        hsl: [Math.round(hsl.h), Math.round(hsl.s), Math.round(hsl.l)],
+        luminance: TD.round(TD.relativeLuminance(rgb), 4),
+        contrastOnWhite: TD.contrastRatio(rgb, { r: 255, g: 255, b: 255, a: 1 }),
+        contrastOnBlack: TD.contrastRatio(rgb, { r: 0, g: 0, b: 0, a: 1 })
+      };
+      if (color.share !== undefined) entry.share = color.share;
+      if (color.nameKey) entry.name = color.nameKey;
+      return entry;
+    });
+    return JSON.stringify({ app: 'Palette Studio', generator: meta || 'TekiDeki', colors: list }, null, 2) + '\n';
+  }
+
+  function paletteToSvg(colors, options) {
+    var opts = options || {};
+    var swatch = opts.swatch || 120;
+    var count = Math.max(1, colors.length);
+    var width = swatch * count;
+    var height = swatch + 44;
+    var rects = colors.map(function (color, index) {
+      var hex = typeof color === 'string' ? color : color.hex;
+      var rgb = typeof color === 'string' ? TD.parseHex(color) : color.rgb;
+      /* Label colour follows the swatch, so the exported SVG stays readable. */
+      var readable = TD.contrastRatio(rgb, { r: 255, g: 255, b: 255, a: 1 }) >= 3 ? '#ffffff' : '#10151c';
+      return '<rect x="' + (index * swatch) + '" y="0" width="' + swatch + '" height="' + swatch + '" fill="' + hex + '"/>'
+        + '<text x="' + (index * swatch + 10) + '" y="' + (swatch - 12) + '" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="15" fill="' + readable + '">'
+        + hex + '</text>';
+    }).join('');
+    return '<svg xmlns="http://www.w3.org/2000/svg" width="' + width + '" height="' + height + '" viewBox="0 0 ' + width + ' ' + height + '" role="img" aria-label="Palette">'
+      + '<rect width="' + width + '" height="' + height + '" fill="#f5f6f8"/>'
+      + rects + '</svg>\n';
+  }
+
+  TD.makeRandom = makeRandom;
+  TD.samplePixels = samplePixels;
+  TD.quantize = quantize;
+  TD.kmeans = kmeans;
+  TD.extractPalette = extractPalette;
+  TD.NAMED_COLORS = NAMED_COLORS;
+  TD.nearestColorName = nearestColorName;
+  TD.gradientCss = gradientCss;
+  TD.gradientSvg = gradientSvg;
+  TD.shadeScale = shadeScale;
+  TD.paletteToCssVars = paletteToCssVars;
+  TD.paletteToScss = paletteToScss;
+  TD.paletteToTailwind = paletteToTailwind;
+  TD.paletteToJson = paletteToJson;
+  TD.paletteToSvg = paletteToSvg;
+
+  if (typeof module !== 'undefined' && module.exports) module.exports = TD;
+})(typeof window !== 'undefined' ? window : global);</script>
+<script>window.TD_LOCALES={"ro":{"appName":"Palette Studio","tagline":"Culori, palete si gradiente, facute local.","skipToContent":"Sari la continut","language":"Limba interfetei","themeDark":"Tema inchisa","themeLight":"Tema deschisa","undo":"Anuleaza","undoEmpty":"Nimic de anulat","copied":"Copiat in clipboard","copyFailed":"Clipboardul nu este disponibil, copiaza manual.","downloaded":"Fisierul a fost descarcat","errorTitle":"A aparut o eroare","eyebrow":"STUDIO DE CULORI, FARA SERVER","heroTitle":"Culoarea potrivita, masurata corect.","heroSubtitle":"Extragi o paleta dintr-o fotografie, generezi armonii si gradiente, verifici contrastul WCAG si vezi cum arata totul pentru ochii cu daltonism. Totul ruleaza in browser: niciun fisier nu pleaca de pe dispozitivul tau.","heroCta":"Incepe cu o culoare","heroPrivacy":"Fara cont, fara incarcare, fara analytics.","tabsLabel":"Sectiuni","secColor":"Culoare","secHarmony":"Armonii","secPalette":"Paleta din imagine","secGradient":"Gradient","secContrast":"Contrast","secCvd":"Daltonism","secExport":"Export","secAbout":"Despre","colorTitle":"1. Alege culoarea de baza","colorHint":"Scrie un cod hex, foloseste selectorul sau ia culoarea dintr-o imagine. Totul se salveaza local.","hexLabel":"Cod hex","pickColor":"Selector de culoare","randomColor":"Culoare aleatoare","copyHex":"Copiaza hex","h":"Nuanta","s":"Saturatie","l":"Luminozitate","rLabel":"Rosu","gLabel":"Verde","bLabel":"Albastru","formatsTitle":"Formate","nearestName":"Cel mai apropiat nume","invalidHex":"Cod hex invalid. Exemplu corect: #2563eb","historyTitle":"Ultimele culori","historyEmpty":"Culorile folosite apar aici.","tintShadeTitle":"Nuante si umbre","harmonyTitle":"2. Armonii","harmonyHint":"Reguli clasice de rotire a nuantei in jurul cercului de culori.","harmonyComplementary":"Complementara","harmonyAnalogous":"Analoaga","harmonyTriadic":"Triadica","harmonyTetradic":"Tetradica","harmonySplit":"Complementara divizata","harmonySquare":"Patrata","harmonyMonochromatic":"Monocroma","harmonyAdd":"Adauga in paleta","harmonyAdded":"Culorile au fost adaugate in paleta salvata","paletteTitle":"3. Paleta dintr-o imagine","paletteHint":"Trage o fotografie aici sau alege un fisier. Algoritmul k-means gaseste culorile dominante si cat la suta din imagine ocupa fiecare.","paletteDropTitle":"Trage imaginea aici","paletteChoose":"Alege imagine","paletteColors":"Culori extrase","paletteExtract":"Extrage paleta","paletteEmpty":"Nicio imagine incarcata inca.","paletteLoading":"Se analizeaza imaginea","paletteDone":"{n} culori extrase din {pixels} pixeli analizati","paletteError":"Imaginea nu a putut fi citita de acest browser.","paletteTooLarge":"Imaginea este prea mare (maximum {max}).","paletteNotImage":"{name} nu este o imagine.","paletteShare":"{p}% din imagine","paletteUse":"Foloseste ca baza","paletteSave":"Salveaza paleta","paletteSaved":"Paleta a fost salvata","paletteClear":"Goleste paleta","savedTitle":"Paleta salvata","savedEmpty":"Paleta salvata este goala. Adauga culori din armonii sau din imagine.","removeColor":"Scoate culoarea","copyColor":"Copiaza culoarea","gradientTitle":"4. Gradient","gradientHint":"Construieste un gradient din paleta si exporta-l ca CSS sau SVG.","gradientType":"Tip","gradientLinear":"Liniar","gradientRadial":"Radial","gradientConic":"Conic","gradientAngle":"Unghi","gradientStops":"Puncte de culoare","gradientAddStop":"Adauga punct","gradientMaxStops":"Maximum {n} puncte de culoare.","gradientRemoveStop":"Sterge punctul","gradientCssLabel":"Cod CSS","gradientReset":"Reset la paleta","gradientNeedTwo":"Adauga cel putin doua puncte de culoare.","contrastTitle":"5. Verificare contrast","contrastHint":"Raportul WCAG 2.x intre text si fundal, cu pragurile exacte.","contrastForeground":"Culoarea textului","contrastBackground":"Culoarea fundalului","contrastSwap":"Inverseaza","contrastRatioLabel":"Raport de contrast","contrastNormalText":"Text normal","contrastLargeText":"Text mare","contrastUiText":"Elemente de interfata","contrastPass":"Trece","contrastFail":"Nu trece","contrastSuggest":"Sugestie accesibila","contrastSuggestionNone":"Culoarea trece deja pragul cerut.","contrastSuggestionText":"Cel mai apropiat {color} fata de {background} atinge {ratio} la pragul {min}.","contrastApply":"Aplica sugestia","contrastLevelAAA":"AAA: minim 7:1 pentru text normal, 4.5:1 pentru text mare","contrastLevelAA":"AA: minim 4.5:1 pentru text normal, 3:1 pentru text mare","contrastLevelUi":"Elemente grafice: minim 3:1","contrastOnPalette":"Paleta pe fundal alb si negru","cvdTitle":"6. Simulare daltonism","cvdHint":"Toate cele 33 de matrice publicate de Machado, Oliveira si Fernandes (2009), aplicate in RGB liniar. Aproape 1 din 12 barbati vede altfel rosul si verdele.","cvdNormal":"Vedere obisnuita","cvdProtanopia":"Protanopie","cvdDeuteranopia":"Deuteranopie","cvdTritanopia":"Tritanopie","cvdProtanomaly":"Protanomalie","cvdDeuteranomaly":"Deuteranomalie","cvdTritanomaly":"Tritanomalie","cvdAchromatopsia":"Acromatopsie","cvdPrevalence":"Frecventa","cvdMen":"barbati","cvdWomen":"femei","cvdNote":"Simularea este un model matematic, nu o diagnosticare. Verifica intotdeauna si cu o a doua unealta daca proiectul este critic.","exportTitle":"7. Export","exportHint":"Formate generate local, fara nicio cerere in retea.","exportPrefix":"Prefix pentru variabile","formatCss":"Variabile CSS","formatTailwind":"Tailwind","formatScss":"SCSS","formatJson":"JSON","formatSvg":"SVG","formatPng":"PNG","copyCode":"Copiaza codul","downloadFile":"Descarca","pngSize":"Dimensiune PNG","exportEmpty":"Nu exista culori de exportat.","aboutTitle":"Despre aplicatie","aboutText":"Palette Studio este un singur fisier HTML. Motorul de culori (sRGB, HSL, HSV, CMYK, CIE Lab, luminanta si contrast WCAG, matricele de daltonism, k-means) este scris de la zero pentru acest proiect, pe baza specificatiilor publice. Nu exista biblioteca externa, font incarcat sau cerere in retea la rulare.","aboutPrivacyTitle":"Confidentialitate","aboutPrivacy":"Imaginile sunt decode in memoria paginii si nu sunt incarcate nicaieri. Paletele, gradientele si setarile raman in localStorage-ul browserului tau. Aplicatia functioneaza offline dupa prima vizita.","aboutLimitsTitle":"Limite oneste","aboutLimits":"Extragerea paletei depinde de iluminarea fotografiei: un fundal mare domina rezultatul. Simularea de daltonism este un model liniar, nu perceptia reala a unei persoane. Numele culorilor vin dintr-o lista de 42 de referinte, deci sunt aproximative. Exportul PNG foloseste canvas-ul browserului.","aboutLicense":"Licenta Apache-2.0. Codul sursa este public pe GitHub.","aboutSource":"Codul sursa","aboutSupport":"Sustine proiectul","aboutVersion":"Versiunea {version}","aboutKeysTitle":"Scurtaturi","aboutKeyUndo":"Anuleaza ultima actiune","aboutKeyRandom":"Culoare aleatoare","aboutKeyCopy":"Copiaza codul hex","colorName_black":"negru","colorName_white":"alb","colorName_gray":"gri","colorName_silver":"argintiu","colorName_charcoal":"antracit","colorName_navy":"bleumarin","colorName_blue":"albastru","colorName_azure":"azuriu","colorName_teal":"verde petrol","colorName_turquoise":"turcoaz","colorName_green":"verde","colorName_olive":"oliv","colorName_lime":"verde lamaie","colorName_emerald":"smarald","colorName_mint":"menta","colorName_yellow":"galben","colorName_gold":"auriu","colorName_amber":"chihlimbar","colorName_orange":"portocaliu","colorName_tangerine":"mandarina","colorName_coral":"coral","colorName_red":"rosu","colorName_crimson":"carmin","colorName_burgundy":"burgund","colorName_maroon":"castaniu inchis","colorName_pink":"roz","colorName_magenta":"magenta","colorName_violet":"violet","colorName_purple":"purpuriu","colorName_indigo":"indigo","colorName_lavender":"lavanda","colorName_beige":"bej","colorName_sand":"nisipiu","colorName_brown":"maro","colorName_chocolate":"ciocolatiu","colorName_coffee":"cafeniu","colorName_cyan":"cian","colorName_sky":"cer senin","colorName_ice":"gheta","colorName_rose":"trandafiriu","colorName_salmon":"somon","colorName_peach":"piersica","contrastOnWhiteShort":"pe alb","tintShadeHint":"Scala generata din culoarea de baza, cu contrastul pe alb si pe negru pentru fiecare treapta.","historyHint":"Culorile folosite raman salvate in browser.","paletteDemo":"Imagine demonstrativa","paletteDropHint":"PNG, JPEG, WebP, GIF sau AVIF. Imaginea ramane in memoria paginii.","paletteResultTitle":"Culori dominante","paletteResultHint":"Apasa o culoare ca sa devina baza. Procentajul arata cat ocupa in imagine.","savedHint":"Aceasta paleta este folosita pentru gradient si pentru export.","contrastLargeRule":"AA mare: 3:1, AAA mare: 4.5:1","contrastUseBase":"Foloseste culoarea de baza","cvdPaletteTitle":"Paleta salvata, aceeasi simulare","shadeStep":"Treapta","shadeHex":"Culoare","shadeOnWhite":"Pe alb","shadeOnBlack":"Pe negru","contrastOnBlackShort":"pe negru","colorCount":"{n} culori","exportCount":"{n} culori in export","contrastDemoText":"Text normal de 14 px pe fundalul ales, exact asa cum il vede cititorul."},"en":{"appName":"Palette Studio","tagline":"Colors, palettes and gradients, built locally.","skipToContent":"Skip to content","language":"Interface language","themeDark":"Dark mode","themeLight":"Light mode","undo":"Undo","undoEmpty":"Nothing to undo","copied":"Copied to clipboard","copyFailed":"Clipboard unavailable, copy it manually.","downloaded":"File downloaded","errorTitle":"Something went wrong","eyebrow":"COLOR STUDIO, NO SERVER","heroTitle":"The right color, measured properly.","heroSubtitle":"Extract a palette from a photo, generate harmonies and gradients, check WCAG contrast and see how it all looks to eyes with color vision deficiency. Everything runs in the browser: no file ever leaves your device.","heroCta":"Start with a color","heroPrivacy":"No account, no upload, no analytics.","tabsLabel":"Sections","secColor":"Color","secHarmony":"Harmonies","secPalette":"Palette from image","secGradient":"Gradient","secContrast":"Contrast","secCvd":"Color blindness","secExport":"Export","secAbout":"About","colorTitle":"1. Pick the base color","colorHint":"Type a hex code, use the picker or take the color from an image. Everything is saved locally.","hexLabel":"Hex code","pickColor":"Color picker","randomColor":"Random color","copyHex":"Copy hex","h":"Hue","s":"Saturation","l":"Lightness","rLabel":"Red","gLabel":"Green","bLabel":"Blue","formatsTitle":"Formats","nearestName":"Nearest name","invalidHex":"Invalid hex code. Correct example: #2563eb","historyTitle":"Recent colors","historyEmpty":"Colors you use appear here.","tintShadeTitle":"Tints and shades","harmonyTitle":"2. Harmonies","harmonyHint":"Classic hue rotations around the color wheel.","harmonyComplementary":"Complementary","harmonyAnalogous":"Analogous","harmonyTriadic":"Triadic","harmonyTetradic":"Tetradic","harmonySplit":"Split complementary","harmonySquare":"Square","harmonyMonochromatic":"Monochromatic","harmonyAdd":"Add to palette","harmonyAdded":"Colors added to the saved palette","paletteTitle":"3. Palette from an image","paletteHint":"Drag a photo here or pick a file. The k-means algorithm finds the dominant colors and how much of the image each one covers.","paletteDropTitle":"Drop the image here","paletteChoose":"Choose image","paletteColors":"Colors to extract","paletteExtract":"Extract palette","paletteEmpty":"No image loaded yet.","paletteLoading":"Analyzing the image","paletteDone":"{n} colors extracted from {pixels} sampled pixels","paletteError":"This browser could not read the image.","paletteTooLarge":"The image is too large (maximum {max}).","paletteNotImage":"{name} is not an image.","paletteShare":"{p}% of the image","paletteUse":"Use as base","paletteSave":"Save palette","paletteSaved":"Palette saved","paletteClear":"Clear palette","savedTitle":"Saved palette","savedEmpty":"The saved palette is empty. Add colors from harmonies or from an image.","removeColor":"Remove color","copyColor":"Copy color","gradientTitle":"4. Gradient","gradientHint":"Build a gradient from the palette and export it as CSS or SVG.","gradientType":"Type","gradientLinear":"Linear","gradientRadial":"Radial","gradientConic":"Conic","gradientAngle":"Angle","gradientStops":"Color stops","gradientAddStop":"Add stop","gradientMaxStops":"A maximum of {n} color stops.","gradientRemoveStop":"Remove stop","gradientCssLabel":"CSS code","gradientReset":"Reset to palette","gradientNeedTwo":"Add at least two color stops.","contrastTitle":"5. Contrast check","contrastHint":"The WCAG 2.x ratio between text and background, with the exact thresholds.","contrastForeground":"Text color","contrastBackground":"Background color","contrastSwap":"Swap","contrastRatioLabel":"Contrast ratio","contrastNormalText":"Normal text","contrastLargeText":"Large text","contrastUiText":"UI components","contrastPass":"Pass","contrastFail":"Fail","contrastSuggest":"Accessible suggestion","contrastSuggestionNone":"The color already passes the required threshold.","contrastSuggestionText":"The nearest {color} against {background} reaches {ratio} at the {min} threshold.","contrastApply":"Apply suggestion","contrastLevelAAA":"AAA: at least 7:1 for normal text, 4.5:1 for large text","contrastLevelAA":"AA: at least 4.5:1 for normal text, 3:1 for large text","contrastLevelUi":"Graphics: at least 3:1","contrastOnPalette":"Palette on white and black","cvdTitle":"6. Color blindness simulation","cvdHint":"All 33 matrices published by Machado, Oliveira and Fernandes (2009), applied in linear RGB. Roughly 1 in 12 men sees red and green differently.","cvdNormal":"Normal vision","cvdProtanopia":"Protanopia","cvdDeuteranopia":"Deuteranopia","cvdTritanopia":"Tritanopia","cvdProtanomaly":"Protanomaly","cvdDeuteranomaly":"Deuteranomaly","cvdTritanomaly":"Tritanomaly","cvdAchromatopsia":"Achromatopsia","cvdPrevalence":"Prevalence","cvdMen":"men","cvdWomen":"women","cvdNote":"The simulation is a mathematical model, not a diagnosis. Always double check with a second tool for critical projects.","exportTitle":"7. Export","exportHint":"Formats generated locally, with no network request.","exportPrefix":"Variable prefix","formatCss":"CSS variables","formatTailwind":"Tailwind","formatScss":"SCSS","formatJson":"JSON","formatSvg":"SVG","formatPng":"PNG","copyCode":"Copy code","downloadFile":"Download","pngSize":"PNG size","exportEmpty":"There are no colors to export.","aboutTitle":"About the app","aboutText":"Palette Studio is a single HTML file. The color engine (sRGB, HSL, HSV, CMYK, CIE Lab, luminance and WCAG contrast, the color blindness matrices, k-means) is written from scratch for this project, based on the public specifications. There is no external library, no loaded font and no network request at runtime.","aboutPrivacyTitle":"Privacy","aboutPrivacy":"Images are decoded in page memory and are never uploaded. Palettes, gradients and settings stay in your browser localStorage. The app works offline after the first visit.","aboutLimitsTitle":"Honest limits","aboutLimits":"Palette extraction depends on the lighting of the photo: a large background dominates the result. The color blindness simulation is a linear model, not the real perception of a person. Color names come from a list of 42 references, so they are approximate. PNG export uses the browser canvas.","aboutLicense":"Apache-2.0 license. The source code is public on GitHub.","aboutSource":"Source code","aboutSupport":"Support the project","aboutVersion":"Version {version}","aboutKeysTitle":"Shortcuts","aboutKeyUndo":"Undo the last action","aboutKeyRandom":"Random color","aboutKeyCopy":"Copy the hex code","colorName_black":"black","colorName_white":"white","colorName_gray":"gray","colorName_silver":"silver","colorName_charcoal":"charcoal","colorName_navy":"navy","colorName_blue":"blue","colorName_azure":"azure","colorName_teal":"teal","colorName_turquoise":"turquoise","colorName_green":"green","colorName_olive":"olive","colorName_lime":"lime","colorName_emerald":"emerald","colorName_mint":"mint","colorName_yellow":"yellow","colorName_gold":"gold","colorName_amber":"amber","colorName_orange":"orange","colorName_tangerine":"tangerine","colorName_coral":"coral","colorName_red":"red","colorName_crimson":"crimson","colorName_burgundy":"burgundy","colorName_maroon":"maroon","colorName_pink":"pink","colorName_magenta":"magenta","colorName_violet":"violet","colorName_purple":"purple","colorName_indigo":"indigo","colorName_lavender":"lavender","colorName_beige":"beige","colorName_sand":"sand","colorName_brown":"brown","colorName_chocolate":"chocolate","colorName_coffee":"coffee","colorName_cyan":"cyan","colorName_sky":"sky","colorName_ice":"ice","colorName_rose":"rose","colorName_salmon":"salmon","colorName_peach":"peach","contrastOnWhiteShort":"on white","tintShadeHint":"The scale generated from the base color, with the contrast on white and on black for every step.","historyHint":"The colors you use stay saved in the browser.","paletteDemo":"Demo image","paletteDropHint":"PNG, JPEG, WebP, GIF or AVIF. The image stays in page memory.","paletteResultTitle":"Dominant colors","paletteResultHint":"Click a color to make it the base. The percentage shows how much of the image it covers.","savedHint":"This palette is used for the gradient and for export.","contrastLargeRule":"AA large: 3:1, AAA large: 4.5:1","contrastUseBase":"Use the base color","cvdPaletteTitle":"The saved palette, same simulation","shadeStep":"Step","shadeHex":"Color","shadeOnWhite":"On white","shadeOnBlack":"On black","contrastOnBlackShort":"on black","colorCount":"{n} colors","exportCount":"{n} colors in the export","contrastDemoText":"Normal 14 px text on the chosen background, exactly as a reader sees it."},"sr-latn":{"appName":"Palette Studio","tagline":"Boje, palete i gradijenti, napravljeni lokalno.","skipToContent":"Predji na sadrzaj","language":"Jezik interfejsa","themeDark":"Tamni režim","themeLight":"Svetli režim","undo":"Poništi","undoEmpty":"Nema sta da se poništi","copied":"Kopirano u klipbord","copyFailed":"Klipbord nije dostupan, kopiraj rucno.","downloaded":"Fajl je preuzet","errorTitle":"Nesto je poslo naopako","eyebrow":"STUDIO BOJA, BEZ SERVERA","heroTitle":"Prava boja, pravilno izmerena.","heroSubtitle":"Izvuci paletu iz fotografije, generisi harmonije i gradijente, proveri WCAG kontrast i vidi kako sve izgleda oku sa daltonizmom. Sve radi u pregledacu: nijedan fajl ne napusta tvoj uređaj.","heroCta":"Pocni sa bojom","heroPrivacy":"Bez naloga, bez otpremanja, bez analitike.","tabsLabel":"Sekcije","secColor":"Boja","secHarmony":"Harmonije","secPalette":"Paleta iz slike","secGradient":"Gradijent","secContrast":"Kontrast","secCvd":"Daltonizam","secExport":"Izvoz","secAbout":"O aplikaciji","colorTitle":"1. Izaberi osnovnu boju","colorHint":"Upisi hex kod, koristi birač ili uzmi boju iz slike. Sve se cuva lokalno.","hexLabel":"Hex kod","pickColor":"Birač boje","randomColor":"Nasumicna boja","copyHex":"Kopiraj hex","h":"Nijansa","s":"Zasićenost","l":"Svetlina","rLabel":"Crvena","gLabel":"Zelena","bLabel":"Plava","formatsTitle":"Formati","nearestName":"Najblizi naziv","invalidHex":"Nevazeci hex kod. Tacan primer: #2563eb","historyTitle":"Poslednje boje","historyEmpty":"Boje koje koristis pojavljuju se ovde.","tintShadeTitle":"Tonovi i senke","harmonyTitle":"2. Harmonije","harmonyHint":"Klasicna rotacija nijansi po krugu boja.","harmonyComplementary":"Komplementarna","harmonyAnalogous":"Analogna","harmonyTriadic":"Triadicna","harmonyTetradic":"Tetradicna","harmonySplit":"Podeljena komplementarna","harmonySquare":"Kvadratna","harmonyMonochromatic":"Monohromatska","harmonyAdd":"Dodaj u paletu","harmonyAdded":"Boje su dodate u sacuvanu paletu","paletteTitle":"3. Paleta iz slike","paletteHint":"Prevuci fotografiju ovde ili izaberi fajl. K-means algoritam nalazi dominantne boje i koliko koja zauzima od slike.","paletteDropTitle":"Prevuci sliku ovde","paletteChoose":"Izaberi sliku","paletteColors":"Broj boja","paletteExtract":"Izvuci paletu","paletteEmpty":"Jos nijedna slika nije ucitana.","paletteLoading":"Analizira se slika","paletteDone":"{n} boja izvučeno iz {pixels} uzorkovanih piksela","paletteError":"Ovaj pregledac nije mogao da pročita sliku.","paletteTooLarge":"Slika je prevelika (najvise {max}).","paletteNotImage":"{name} nije slika.","paletteShare":"{p}% slike","paletteUse":"Koristi kao osnovu","paletteSave":"Sacuvaj paletu","paletteSaved":"Paleta je sacuvana","paletteClear":"Isprazni paletu","savedTitle":"Sacuvana paleta","savedEmpty":"Sacuvana paleta je prazna. Dodaj boje iz harmonija ili iz slike.","removeColor":"Ukloni boju","copyColor":"Kopiraj boju","gradientTitle":"4. Gradijent","gradientHint":"Napravi gradijent iz palete i izvezi ga kao CSS ili SVG.","gradientType":"Tip","gradientLinear":"Linearni","gradientRadial":"Radijalni","gradientConic":"Konichni","gradientAngle":"Ugao","gradientStops":"Tačke boje","gradientAddStop":"Dodaj tačku","gradientMaxStops":"Najvise {n} tačaka boje.","gradientRemoveStop":"Obriši tačku","gradientCssLabel":"CSS kod","gradientReset":"Vrati na paletu","gradientNeedTwo":"Dodaj bar dve tačke boje.","contrastTitle":"5. Provera kontrasta","contrastHint":"WCAG 2.x odnos između teksta i pozadine, sa tacnim granicama.","contrastForeground":"Boja teksta","contrastBackground":"Boja pozadine","contrastSwap":"Zameni","contrastRatioLabel":"Odnos kontrasta","contrastNormalText":"Normalan tekst","contrastLargeText":"Krupan tekst","contrastUiText":"Elementi interfejsa","contrastPass":"Prolazi","contrastFail":"Ne prolazi","contrastSuggest":"Pristupacan predlog","contrastSuggestionNone":"Boja vec prolazi trazenu granicu.","contrastSuggestionText":"Najbliza {color} na {background} dostize {ratio} na granici {min}.","contrastApply":"Primeni predlog","contrastLevelAAA":"AAA: najmanje 7:1 za normalan tekst, 4.5:1 za krupan tekst","contrastLevelAA":"AA: najmanje 4.5:1 za normalan tekst, 3:1 za krupan tekst","contrastLevelUi":"Graficki elementi: najmanje 3:1","contrastOnPalette":"Paleta na beloj i crnoj pozadini","cvdTitle":"6. Simulacija daltonizma","cvdHint":"Svih 33 matrice koje su objavili Machado, Oliveira i Fernandes (2009), primenjene u linearnom RGB. Otprilike 1 od 12 muskaraca drugacije vidi crveno i zeleno.","cvdNormal":"Normalan vid","cvdProtanopia":"Protanopija","cvdDeuteranopia":"Deuteranopija","cvdTritanopia":"Tritanopija","cvdProtanomaly":"Protanomalija","cvdDeuteranomaly":"Deuteranomalija","cvdTritanomaly":"Tritanomalija","cvdAchromatopsia":"Ahromatopsija","cvdPrevalence":"Ucestalost","cvdMen":"muskarci","cvdWomen":"zene","cvdNote":"Simulacija je matematicki model, ne dijagnoza. Uvek proverite i drugim alatom za kritične projekte.","exportTitle":"7. Izvoz","exportHint":"Formati generisani lokalno, bez ijednog mrežnog zahteva.","exportPrefix":"Prefiks za promenljive","formatCss":"CSS promenljive","formatTailwind":"Tailwind","formatScss":"SCSS","formatJson":"JSON","formatSvg":"SVG","formatPng":"PNG","copyCode":"Kopiraj kod","downloadFile":"Preuzmi","pngSize":"PNG dimenzija","exportEmpty":"Nema boja za izvoz.","aboutTitle":"O aplikaciji","aboutText":"Palette Studio je jedan HTML fajl. Motor za boje (sRGB, HSL, HSV, CMYK, CIE Lab, luminanca i WCAG kontrast, matrice daltonizma, k-means) je napisan od nule za ovaj projekat, na osnovu javnih specifikacija. Nema externe biblioteke, ucitanog fonta ni mrežnog zahteva pri radu.","aboutPrivacyTitle":"Privatnost","aboutPrivacy":"Slike se dekoduju u memoriji stranice i ne otpremaju se nigde. Palete, gradijenti i podešavanja ostaju u localStorage tvog pregledaca. Aplikacija radi offline nakon prve posete.","aboutLimitsTitle":"Poštena ogranicenja","aboutLimits":"Izvlacenje palete zavisi od osvetljenja fotografije: velika pozadina dominira rezultatom. Simulacija daltonizma je linearni model, ne stvarna percepcija osobe. Nazivi boja dolaze iz liste od 42 reference, pa su priblizni. PNG izvoz koristi canvas pregledaca.","aboutLicense":"Apache-2.0 licenca. Izvorni kod je javan na GitHub-u.","aboutSource":"Izvorni kod","aboutSupport":"Podrzi projekat","aboutVersion":"Verzija {version}","aboutKeysTitle":"Prečice","aboutKeyUndo":"Poništi poslednju radnju","aboutKeyRandom":"Nasumicna boja","aboutKeyCopy":"Kopiraj hex kod","colorName_black":"crna","colorName_white":"bela","colorName_gray":"siva","colorName_silver":"srebrna","colorName_charcoal":"antracit","colorName_navy":"tamnoplava","colorName_blue":"plava","colorName_azure":"azurna","colorName_teal":"tirkizno zelena","colorName_turquoise":"tirkizna","colorName_green":"zelena","colorName_olive":"maslinasta","colorName_lime":"limeta","colorName_emerald":"smaragdna","colorName_mint":"menta","colorName_yellow":"žuta","colorName_gold":"zlatna","colorName_amber":"ćilibarna","colorName_orange":"narandžasta","colorName_tangerine":"mandarina","colorName_coral":"koralna","colorName_red":"crvena","colorName_crimson":"karmin","colorName_burgundy":"bordo","colorName_maroon":"kestenjasta","colorName_pink":"roze","colorName_magenta":"magenta","colorName_violet":"ljubičasta","colorName_purple":"purpurna","colorName_indigo":"indigo","colorName_lavender":"lavanda","colorName_beige":"bez","colorName_sand":"peskovita","colorName_brown":"braon","colorName_chocolate":"cokoladna","colorName_coffee":"kafena","colorName_cyan":"cijan","colorName_sky":"nebeska","colorName_ice":"ledena","colorName_rose":"ruza","colorName_salmon":"losos","colorName_peach":"breskva","contrastOnWhiteShort":"na beloj","tintShadeHint":"Skala generisana iz osnovne boje, sa kontrastom na beloj i crnoj pozadini za svaki korak.","historyHint":"Boje koje koristis ostaju sacuvane u pregledacu.","paletteDemo":"Demo slika","paletteDropHint":"PNG, JPEG, WebP, GIF ili AVIF. Slika ostaje u memoriji stranice.","paletteResultTitle":"Dominantne boje","paletteResultHint":"Klikni boju da postane osnova. Procenat pokazuje koliko zauzima od slike.","savedHint":"Ova paleta se koristi za gradijent i za izvoz.","contrastLargeRule":"AA krupno: 3:1, AAA krupno: 4.5:1","contrastUseBase":"Koristi osnovnu boju","cvdPaletteTitle":"Sacuvana paleta, ista simulacija","shadeStep":"Korak","shadeHex":"Boja","shadeOnWhite":"Na beloj","shadeOnBlack":"Na crnoj","contrastOnBlackShort":"na crnoj","colorCount":"{n} boja","exportCount":"{n} boja u izvozu","contrastDemoText":"Normalan tekst od 14 px na izabranoj pozadini, tacno kako ga citalac vidi."},"sr-cyrl":{"appName":"Палетте Студио","tagline":"Боје, палете и градијенти, направљени локално.","skipToContent":"Предји на садрзај","language":"Језик интерфејса","themeDark":"Тамни режим","themeLight":"Светли режим","undo":"Поништи","undoEmpty":"Нема ста да се поништи","copied":"Копирано у клипборд","copyFailed":"Клипборд није доступан, копирај руцно.","downloaded":"Фајл је преузет","errorTitle":"Несто је посло наопако","eyebrow":"СТУДИО БОЈА, БЕЗ СЕРВЕРА","heroTitle":"Права боја, правилно измерена.","heroSubtitle":"Извуци палету из фотографије, генериси хармоније и градијенте, провери WЦАГ контраст и види како све изгледа оку са далтонизмом. Све ради у прегледацу: ниједан фајл не напуста твој уређај.","heroCta":"Поцни са бојом","heroPrivacy":"Без налога, без отпремања, без аналитике.","tabsLabel":"Секције","secColor":"Боја","secHarmony":"Хармоније","secPalette":"Палета из слике","secGradient":"Градијент","secContrast":"Контраст","secCvd":"Далтонизам","secExport":"Извоз","secAbout":"О апликацији","colorTitle":"1. Изабери основну боју","colorHint":"Уписи хеx код, користи бирач или узми боју из слике. Све се цува локално.","hexLabel":"Хеx код","pickColor":"Бирач боје","randomColor":"Насумицна боја","copyHex":"Копирај хеx","h":"Нијанса","s":"Засићеност","l":"Светлина","rLabel":"Црвена","gLabel":"Зелена","bLabel":"Плава","formatsTitle":"Формати","nearestName":"Најблизи назив","invalidHex":"Невазеци хеx код. Тацан пример: #2563еб","historyTitle":"Последње боје","historyEmpty":"Боје које користис појављују се овде.","tintShadeTitle":"Тонови и сенке","harmonyTitle":"2. Хармоније","harmonyHint":"Класицна ротација нијанси по кругу боја.","harmonyComplementary":"Комплементарна","harmonyAnalogous":"Аналогна","harmonyTriadic":"Триадицна","harmonyTetradic":"Тетрадицна","harmonySplit":"Подељена комплементарна","harmonySquare":"Квадратна","harmonyMonochromatic":"Монохроматска","harmonyAdd":"Додај у палету","harmonyAdded":"Боје су додате у сацувану палету","paletteTitle":"3. Палета из слике","paletteHint":"Превуци фотографију овде или изабери фајл. К-меанс алгоритам налази доминантне боје и колико која заузима од слике.","paletteDropTitle":"Превуци слику овде","paletteChoose":"Изабери слику","paletteColors":"Број боја","paletteExtract":"Извуци палету","paletteEmpty":"Јос ниједна слика није уцитана.","paletteLoading":"Анализира се слика","paletteDone":"{н} боја извучено из {пиxелс} узоркованих пиксела","paletteError":"Овај прегледац није могао да прочита слику.","paletteTooLarge":"Слика је превелика (највисе {маx}).","paletteNotImage":"{наме} није слика.","paletteShare":"{п}% слике","paletteUse":"Користи као основу","paletteSave":"Сацувај палету","paletteSaved":"Палета је сацувана","paletteClear":"Испразни палету","savedTitle":"Сацувана палета","savedEmpty":"Сацувана палета је празна. Додај боје из хармонија или из слике.","removeColor":"Уклони боју","copyColor":"Копирај боју","gradientTitle":"4. Градијент","gradientHint":"Направи градијент из палете и извези га као ЦСС или СВГ.","gradientType":"Тип","gradientLinear":"Линеарни","gradientRadial":"Радијални","gradientConic":"Коницхни","gradientAngle":"Угао","gradientStops":"Тачке боје","gradientAddStop":"Додај тачку","gradientMaxStops":"Највисе {н} тачака боје.","gradientRemoveStop":"Обриши тачку","gradientCssLabel":"ЦСС код","gradientReset":"Врати на палету","gradientNeedTwo":"Додај бар две тачке боје.","contrastTitle":"5. Провера контраста","contrastHint":"WЦАГ 2.x однос између текста и позадине, са тацним границама.","contrastForeground":"Боја текста","contrastBackground":"Боја позадине","contrastSwap":"Замени","contrastRatioLabel":"Однос контраста","contrastNormalText":"Нормалан текст","contrastLargeText":"Крупан текст","contrastUiText":"Елементи интерфејса","contrastPass":"Пролази","contrastFail":"Не пролази","contrastSuggest":"Приступацан предлог","contrastSuggestionNone":"Боја вец пролази тразену границу.","contrastSuggestionText":"Најблиза {цолор} на {бацкгроунд} достизе {ратио} на граници {мин}.","contrastApply":"Примени предлог","contrastLevelAAA":"ААА: најмање 7:1 за нормалан текст, 4.5:1 за крупан текст","contrastLevelAA":"АА: најмање 4.5:1 за нормалан текст, 3:1 за крупан текст","contrastLevelUi":"Графицки елементи: најмање 3:1","contrastOnPalette":"Палета на белој и црној позадини","cvdTitle":"6. Симулација далтонизма","cvdHint":"Свих 33 матрице које су објавили Мацхадо, Оливеира и Фернандес (2009), примењене у линеарном РГБ. Отприлике 1 од 12 мускараца другације види црвено и зелено.","cvdNormal":"Нормалан вид","cvdProtanopia":"Протанопија","cvdDeuteranopia":"Деутеранопија","cvdTritanopia":"Тританопија","cvdProtanomaly":"Протаномалија","cvdDeuteranomaly":"Деутераномалија","cvdTritanomaly":"Тританомалија","cvdAchromatopsia":"Ахроматопсија","cvdPrevalence":"Уцесталост","cvdMen":"мускарци","cvdWomen":"зене","cvdNote":"Симулација је математицки модел, не дијагноза. Увек проверите и другим алатом за критичне пројекте.","exportTitle":"7. Извоз","exportHint":"Формати генерисани локално, без иједног мрежног захтева.","exportPrefix":"Префикс за променљиве","formatCss":"ЦСС променљиве","formatTailwind":"Таилwинд","formatScss":"СЦСС","formatJson":"ЈСОН","formatSvg":"СВГ","formatPng":"ПНГ","copyCode":"Копирај код","downloadFile":"Преузми","pngSize":"ПНГ димензија","exportEmpty":"Нема боја за извоз.","aboutTitle":"О апликацији","aboutText":"Палетте Студио је један ХТМЛ фајл. Мотор за боје (сРГБ, ХСЛ, ХСВ, ЦМYК, ЦИЕ Лаб, луминанца и WЦАГ контраст, матрице далтонизма, к-меанс) је написан од нуле за овај пројекат, на основу јавних спецификација. Нема еxтерне библиотеке, уцитаног фонта ни мрежног захтева при раду.","aboutPrivacyTitle":"Приватност","aboutPrivacy":"Слике се декодују у меморији странице и не отпремају се нигде. Палете, градијенти и подешавања остају у лоцалСтораге твог прегледаца. Апликација ради оффлине након прве посете.","aboutLimitsTitle":"Поштена ограницења","aboutLimits":"Извлацење палете зависи од осветљења фотографије: велика позадина доминира резултатом. Симулација далтонизма је линеарни модел, не стварна перцепција особе. Називи боја долазе из листе од 42 референце, па су приблизни. ПНГ извоз користи цанвас прегледаца.","aboutLicense":"Апацхе-2.0 лиценца. Изворни код је јаван на ГитХуб-у.","aboutSource":"Изворни код","aboutSupport":"Подрзи пројекат","aboutVersion":"Верзија {версион}","aboutKeysTitle":"Пречице","aboutKeyUndo":"Поништи последњу радњу","aboutKeyRandom":"Насумицна боја","aboutKeyCopy":"Копирај хеx код","colorName_black":"црна","colorName_white":"бела","colorName_gray":"сива","colorName_silver":"сребрна","colorName_charcoal":"антрацит","colorName_navy":"тамноплава","colorName_blue":"плава","colorName_azure":"азурна","colorName_teal":"тиркизно зелена","colorName_turquoise":"тиркизна","colorName_green":"зелена","colorName_olive":"маслинаста","colorName_lime":"лимета","colorName_emerald":"смарагдна","colorName_mint":"мента","colorName_yellow":"жута","colorName_gold":"златна","colorName_amber":"ћилибарна","colorName_orange":"наранџаста","colorName_tangerine":"мандарина","colorName_coral":"корална","colorName_red":"црвена","colorName_crimson":"кармин","colorName_burgundy":"бордо","colorName_maroon":"кестењаста","colorName_pink":"розе","colorName_magenta":"магента","colorName_violet":"љубичаста","colorName_purple":"пурпурна","colorName_indigo":"индиго","colorName_lavender":"лаванда","colorName_beige":"без","colorName_sand":"песковита","colorName_brown":"браон","colorName_chocolate":"цоколадна","colorName_coffee":"кафена","colorName_cyan":"цијан","colorName_sky":"небеска","colorName_ice":"ледена","colorName_rose":"руза","colorName_salmon":"лосос","colorName_peach":"бресква","contrastOnWhiteShort":"на белој","tintShadeHint":"Скала генерисана из основне боје, са контрастом на белој и црној позадини за сваки корак.","historyHint":"Боје које користис остају сацуване у прегледацу.","paletteDemo":"Демо слика","paletteDropHint":"ПНГ, ЈПЕГ, WебП, ГИФ или АВИФ. Слика остаје у меморији странице.","paletteResultTitle":"Доминантне боје","paletteResultHint":"Кликни боју да постане основа. Проценат показује колико заузима од слике.","savedHint":"Ова палета се користи за градијент и за извоз.","contrastLargeRule":"АА крупно: 3:1, ААА крупно: 4.5:1","contrastUseBase":"Користи основну боју","cvdPaletteTitle":"Сацувана палета, иста симулација","shadeStep":"Корак","shadeHex":"Боја","shadeOnWhite":"На белој","shadeOnBlack":"На црној","contrastOnBlackShort":"на црној","colorCount":"{н} боја","exportCount":"{н} боја у извозу","contrastDemoText":"Нормалан текст од 14 пx на изабраној позадини, тацно како га циталац види."}};
+/* Palette Studio · TekiDeki - application logic
+ * SPDX-License-Identifier: Apache-2.0
+ * Copyright 2026 Kristian Mario Miskovic (TekiDeki)
+ *
+ * No framework, no build step for the user, no network request at runtime.
+ * All colour maths lives in color.js and palette.js, which the Node tests
+ * load directly.
+ */
+(function () {
+  'use strict';
+
+  var VERSION = '1';
+  var STORAGE_PREFIX = 'tekideki-palette-';
+  var LOCALES = window.TD_LOCALES || {};
+  var FALLBACK = 'en';
+
+  var MAX_FILE_BYTES = 40 * 1024 * 1024;
+  var MAX_DECODE_EDGE = 1000;
+  var MAX_STOPS = 8;
+  var MAX_HISTORY_COLORS = 18;
+  var MAX_UNDO = 40;
+
+  var HARMONY_LIST = ['complementary', 'analogous', 'triadic', 'tetradic', 'split', 'square', 'monochromatic'];
+  var GRADIENT_TYPES = ['linear', 'radial', 'conic'];
+  var EXPORT_FORMATS = ['css', 'tailwind', 'scss', 'json', 'svg', 'png'];
+
+  var CVD_LIST = [
+    { key: 'normal', prevalence: '-' },
+    { key: 'protanopia', men: '1%', women: '0.01%' },
+    { key: 'deuteranopia', men: '1%', women: '0.01%' },
+    { key: 'tritanopia', men: '0.003%', women: '0.003%' },
+    { key: 'protanomaly', men: '1%', women: '0.03%' },
+    { key: 'deuteranomaly', men: '6%', women: '0.4%' },
+    { key: 'tritanomaly', men: '0.01%', women: '0.01%' },
+    { key: 'achromatopsia', men: '0.003%', women: '0.003%' }
+  ];
+
+  var WHITE = { r: 255, g: 255, b: 255, a: 1 };
+  var BLACK = { r: 0, g: 0, b: 0, a: 1 };
+
+  var state = {
+    current: '#2563eb',
+    savedPalette: [],
+    extracted: [],
+    harmony: 'triadic',
+    gradient: { type: 'linear', angle: 135, stops: [] },
+    contrast: { fg: '#2563eb', bg: '#ffffff' },
+    cvd: 'normal',
+    exportFormat: 'css',
+    prefix: 'brand',
+    pngSize: 1200,
+    history: [],
+    locale: 'ro',
+    theme: 'light',
+    sourceName: ''
+  };
+
+  var undoStack = [];
+  var currentBitmap = null;
+  var objectUrl = null;
+  var suggestion = null;
+
+  /* --------------------------------------------------------------- storage */
+
+  function safeGet(key) {
+    try { return window.localStorage.getItem(STORAGE_PREFIX + key); } catch (e) { return null; }
+  }
+
+  function safeSet(key, value) {
+    try { window.localStorage.setItem(STORAGE_PREFIX + key, value); } catch (e) { /* private mode */ }
+  }
+
+  function persist() {
+    safeSet('state', JSON.stringify({
+      current: state.current,
+      savedPalette: state.savedPalette,
+      harmony: state.harmony,
+      gradient: state.gradient,
+      contrast: state.contrast,
+      cvd: state.cvd,
+      exportFormat: state.exportFormat,
+      prefix: state.prefix,
+      pngSize: state.pngSize,
+      history: state.history
+    }));
+  }
+
+  function restore() {
+    var raw = safeGet('state');
+    if (!raw) return;
+    try {
+      var saved = JSON.parse(raw);
+      if (typeof saved.current === 'string' && TD.parseHex(saved.current)) state.current = saved.current;
+      if (Array.isArray(saved.savedPalette)) {
+        state.savedPalette = saved.savedPalette
+          .filter(function (hex) { return TD.parseHex(hex); })
+          .slice(0, 12);
+      }
+      if (HARMONY_LIST.indexOf(saved.harmony) >= 0) state.harmony = saved.harmony;
+      if (saved.gradient && GRADIENT_TYPES.indexOf(saved.gradient.type) >= 0) {
+        state.gradient.type = saved.gradient.type;
+        state.gradient.angle = Number(saved.gradient.angle) || 135;
+        if (Array.isArray(saved.gradient.stops)) {
+          state.gradient.stops = saved.gradient.stops
+            .filter(function (stop) { return stop && TD.parseHex(stop.hex); })
+            .map(function (stop) { return { hex: stop.hex, position: TD.clamp(Number(stop.position) || 0, 0, 100) }; })
+            .slice(0, MAX_STOPS);
+        }
+      }
+      if (saved.contrast && TD.parseHex(saved.contrast.fg) && TD.parseHex(saved.contrast.bg)) {
+        state.contrast = { fg: saved.contrast.fg, bg: saved.contrast.bg };
+      }
+      if (CVD_LIST.some(function (item) { return item.key === saved.cvd; })) state.cvd = saved.cvd;
+      if (EXPORT_FORMATS.indexOf(saved.exportFormat) >= 0) state.exportFormat = saved.exportFormat;
+      if (typeof saved.prefix === 'string' && /^[a-zA-Z][a-zA-Z0-9_-]{0,23}$/.test(saved.prefix)) state.prefix = saved.prefix;
+      if (Array.isArray(saved.history)) {
+        state.history = saved.history.filter(function (hex) { return TD.parseHex(hex); }).slice(0, MAX_HISTORY_COLORS);
+      }
+    } catch (e) { /* corrupted storage: start clean */ }
+  }
+
+  /* ------------------------------------------------------------------ i18n */
+
+  function t(key, values) {
+    var table = LOCALES[state.locale] || LOCALES[FALLBACK] || LOCALES.ro || {};
+    var text = table[key];
+    if (text === undefined) {
+      text = (LOCALES[FALLBACK] || {})[key];
+    }
+    if (text === undefined) {
+      text = (LOCALES.ro || {})[key];
+    }
+    if (text === undefined) return key;
+    if (!values) return text;
+    return text.replace(/\{([a-z0-9_]+)\}/g, function (match, name) {
+      return values[name] === undefined ? match : String(values[name]);
+    });
+  }
+
+  /* Serbian Cyrillic is transliterated, never translated separately. */
+  function toCyrillic(value) {
+    var digraphs = [
+      ['DŽ', 'Џ'], ['Dž', 'Џ'], ['dž', 'џ'],
+      ['LJ', 'Љ'], ['Lj', 'Љ'], ['lj', 'љ'],
+      ['NJ', 'Њ'], ['Nj', 'Њ'], ['nj', 'њ']
+    ];
+    var singles = {
+      a: 'а', b: 'б', v: 'в', g: 'г', d: 'д', 'đ': 'ђ', e: 'е',
+      'ž': 'ж', z: 'з', i: 'и', j: 'ј', k: 'к', l: 'л', m: 'м', n: 'н',
+      o: 'о', p: 'п', r: 'р', s: 'с', t: 'т', 'ć': 'ћ', u: 'у', f: 'ф',
+      h: 'х', c: 'ц', 'č': 'ч', 'š': 'ш', 'ă': 'а', 'â': 'а', 'î': 'и',
+      'ș': 'с', 'ț': 'т'
+    };
+    var out = '';
+    var index = 0;
+    while (index < value.length) {
+      var matched = false;
+      for (var d = 0; d < digraphs.length; d++) {
+        if (value.indexOf(digraphs[d][0], index) === index) {
+          out += digraphs[d][1];
+          index += digraphs[d][0].length;
+          matched = true;
+          break;
+        }
+      }
+      if (matched) continue;
+      var char = value[index];
+      var lower = char.toLowerCase();
+      var converted = singles[lower];
+      if (converted) {
+        out += char === char.toUpperCase() && char !== char.toLowerCase()
+          ? converted.toUpperCase()
+          : converted;
+      } else {
+        out += char;
+      }
+      index += 1;
+    }
+    return out;
+  }
+
+  function label(key) {
+    var text = t(key);
+    return state.locale === 'sr-cyrl' ? toCyrillic(text) : text;
+  }
+
+  function applyTranslations() {
+    document.documentElement.lang = state.locale;
+    document.querySelectorAll('[data-i18n]').forEach(function (node) {
+      var key = node.getAttribute('data-i18n');
+      if (LOCALES[state.locale] && LOCALES[state.locale][key] !== undefined) {
+        node.textContent = label(key);
+      }
+    });
+    document.querySelectorAll('[data-i18n-aria]').forEach(function (node) {
+      node.setAttribute('aria-label', label(node.getAttribute('data-i18n-aria')));
+    });
+    document.querySelectorAll('#langSelect option').forEach(function (option) {
+      if (state.locale === 'sr-cyrl') {
+        option.textContent = toCyrillic(option.getAttribute('data-base') || option.textContent);
+      } else if (option.getAttribute('data-base')) {
+        option.textContent = option.getAttribute('data-base');
+      }
+    });
+    document.getElementById('themeLabel').textContent = label(state.theme === 'dark' ? 'themeLight' : 'themeDark');
+    document.getElementById('themeBtn').setAttribute('aria-pressed', state.theme === 'dark' ? 'true' : 'false');
+    document.getElementById('versionBadge').textContent = t('aboutVersion', { version: VERSION });
+  }
+
+  function detectLocale() {
+    var params = new URLSearchParams(window.location.search);
+    var fromUrl = (params.get('lang') || '').toLowerCase();
+    if (LOCALES[fromUrl]) return fromUrl;
+    var saved = safeGet('lang');
+    if (saved && LOCALES[saved]) return saved;
+    var nav = (navigator.language || 'en').toLowerCase();
+    if (nav.indexOf('ro') === 0) return 'ro';
+    if (nav.indexOf('sr') === 0) return nav.indexOf('cyrl') >= 0 ? 'sr-cyrl' : 'sr-latn';
+    return FALLBACK;
+  }
+
+  function setLocale(locale) {
+    if (!LOCALES[locale]) return;
+    state.locale = locale;
+    document.getElementById('langSelect').value = locale;
+    safeSet('lang', locale);
+    renderAll();
+  }
+
+  /* ----------------------------------------------------------------- theme */
+
+  function setTheme(theme, persistTheme) {
+    state.theme = theme === 'dark' ? 'dark' : 'light';
+    document.documentElement.classList.toggle('theme-dark', state.theme === 'dark');
+    document.documentElement.classList.toggle('theme-light', state.theme !== 'dark');
+    var meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute('content', state.theme === 'dark' ? '#0b1120' : '#2563eb');
+    if (persistTheme !== false) safeSet('theme', state.theme);
+    document.getElementById('themeLabel').textContent = label(state.theme === 'dark' ? 'themeLight' : 'themeDark');
+    document.getElementById('themeBtn').setAttribute('aria-pressed', state.theme === 'dark' ? 'true' : 'false');
+  }
+
+  /* ------------------------------------------------------------------ undo */
+
+  function snapshot() {
+    return JSON.stringify({
+      current: state.current,
+      savedPalette: state.savedPalette.slice(),
+      extracted: state.extracted.slice(),
+      harmony: state.harmony,
+      gradient: JSON.parse(JSON.stringify(state.gradient)),
+      contrast: { fg: state.contrast.fg, bg: state.contrast.bg }
+    });
+  }
+
+  function pushUndo() {
+    undoStack.push(snapshot());
+    if (undoStack.length > MAX_UNDO) undoStack.shift();
+    document.getElementById('undoBtn').disabled = false;
+  }
+
+  function undo() {
+    if (undoStack.length === 0) return;
+    var previous = JSON.parse(undoStack.pop());
+    state.current = previous.current;
+    state.savedPalette = previous.savedPalette;
+    state.extracted = previous.extracted;
+    state.harmony = previous.harmony;
+    state.gradient = previous.gradient;
+    state.contrast = previous.contrast;
+    document.getElementById('undoBtn').disabled = undoStack.length === 0;
+    renderAll();
+    persist();
+  }
+
+  /* ---------------------------------------------------------------- colors */
+
+  function currentRgb() {
+    return TD.parseHex(state.current) || { r: 37, g: 99, b: 235, a: 1 };
+  }
+
+  function harmonyColors() {
+    var rgb = currentRgb();
+    if (state.harmony === 'monochromatic') return TD.monochromatic(rgb, 5);
+    return TD.harmony(state.harmony, rgb);
+  }
+
+  function rememberColor(hex) {
+    if (state.history[0] === hex) return;
+    state.history = [hex].concat(state.history.filter(function (item) { return item !== hex; }));
+    if (state.history.length > MAX_HISTORY_COLORS) state.history.length = MAX_HISTORY_COLORS;
+  }
+
+  function setCurrent(hex, options) {
+    var parsed = TD.parseHex(hex);
+    if (!parsed) return false;
+    var normalized = TD.rgbToHex(TD.normalizeRgb(parsed));
+    if (normalized === state.current) return true;
+    if (!options || options.recordUndo !== false) pushUndo();
+    state.current = normalized;
+    rememberColor(normalized);
+    renderAll();
+    persist();
+    return true;
+  }
+
+  /* ------------------------------------------------------------- clipboard */
+
+  function showToast(elementId, message, kind) {
+    var node = document.getElementById(elementId);
+    if (!node) return;
+    node.textContent = message;
+    node.hidden = false;
+    node.className = 'status' + (kind ? ' ' + kind : '');
+    window.clearTimeout(node.timer);
+    node.timer = window.setTimeout(function () { node.hidden = true; }, 3200);
+  }
+
+  function copyText(text, statusId) {
+    function fallback() {
+      var area = document.createElement('textarea');
+      area.value = text;
+      area.setAttribute('readonly', '');
+      area.style.position = 'fixed';
+      area.style.opacity = '0';
+      document.body.appendChild(area);
+      area.select();
+      var ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+      document.body.removeChild(area);
+      showToast(statusId || 'toast', ok ? label('copied') : label('copyFailed'), ok ? 'ok' : 'error');
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () {
+        showToast(statusId || 'toast', label('copied'), 'ok');
+      }).catch(fallback);
+    } else {
+      fallback();
+    }
+  }
+
+  /* --------------------------------------------------------------- helpers */
+
+  function el(tag, className, text) {
+    var node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text !== undefined) node.textContent = text;
+    return node;
+  }
+
+  function swatchButton(hex, extraClass, title) {
+    var button = el('button', 'swatch' + (extraClass ? ' ' + extraClass : ''));
+    button.type = 'button';
+    button.style.setProperty('--swatch', hex);
+    button.title = title || hex;
+    button.setAttribute('aria-label', (title || hex) + ' ' + hex);
+    button.appendChild(el('span', 'swatch-label', hex));
+    return button;
+  }
+
+  function downloadText(filename, text, mime) {
+    var blob = new Blob([text], { type: mime || 'text/plain;charset=utf-8' });
+    var url = URL.createObjectURL(blob);
+    var anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = filename;
+    document.body.appendChild(anchor);
+    anchor.click();
+    document.body.removeChild(anchor);
+    window.setTimeout(function () { URL.revokeObjectURL(url); }, 1500);
+    showToast('exportStatus', label('downloaded'), 'ok');
+  }
+
+  function downloadBlob(filename, blob) {
+    var url = URL.createObjectURL(blob);
+    var anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = filename;
+    document.body.appendChild(anchor);
+    anchor.click();
+    document.body.removeChild(anchor);
+    window.setTimeout(function () { URL.revokeObjectURL(url); }, 1500);
+    showToast('exportStatus', label('downloaded'), 'ok');
+  }
+
+  /* Order of preference: the saved palette, then the palette extracted from
+   * an image, then the harmony of the current color. Never a single color:
+   * an export of one swatch is not a palette. */
+  function exportColors() {
+    if (state.savedPalette.length > 0) {
+      return state.savedPalette
+        .map(function (hex) {
+          var rgb = TD.parseHex(hex);
+          return rgb ? { hex: hex, rgb: rgb } : null;
+        })
+        .filter(Boolean);
+    }
+    if (state.extracted.length > 0) {
+      return state.extracted.map(function (item) { return { hex: item.hex, rgb: item.rgb, share: item.share }; });
+    }
+    return harmonyColors().map(function (rgb) {
+      return { hex: TD.rgbToHex(rgb), rgb: rgb };
+    });
+  }
+
+  /* ---------------------------------------------------------------- render */
+
+  function renderHero() {
+    var rgb = currentRgb();
+    var hex = TD.rgbToHex(rgb);
+    var hsl = TD.rgbToHsl(rgb);
+    var hsv = TD.rgbToHsv(rgb);
+    var cmyk = TD.rgbToCmyk(rgb);
+    var lab = TD.rgbToLab(rgb);
+    var name = TD.nearestColorName(rgb);
+
+    document.getElementById('heroSwatch').style.setProperty('--current', hex);
+    document.getElementById('heroHex').textContent = hex;
+    document.getElementById('heroName').textContent = label('colorName_' + name.key);
+    document.getElementById('metaRgb').textContent = Math.round(rgb.r) + ' ' + Math.round(rgb.g) + ' ' + Math.round(rgb.b);
+    document.getElementById('metaHsl').textContent = Math.round(hsl.h) + ' ' + Math.round(hsl.s) + ' ' + Math.round(hsl.l);
+    document.getElementById('metaContrast').textContent = TD.contrastRatio(rgb, WHITE).toFixed(2) + ':1';
+
+    document.getElementById('hexInput').value = hex;
+    document.getElementById('hexInput').classList.remove('invalid');
+    document.getElementById('colorPicker').value = hex;
+    document.getElementById('rangeH').value = Math.round(hsl.h);
+    document.getElementById('rangeS').value = Math.round(hsl.s);
+    document.getElementById('rangeL').value = Math.round(hsl.l);
+    document.getElementById('valueH').textContent = Math.round(hsl.h);
+    document.getElementById('valueS').textContent = Math.round(hsl.s) + '%';
+    document.getElementById('valueL').textContent = Math.round(hsl.l) + '%';
+    document.getElementById('inputR').value = Math.round(rgb.r);
+    document.getElementById('inputG').value = Math.round(rgb.g);
+    document.getElementById('inputB').value = Math.round(rgb.b);
+
+    document.getElementById('fmtHex').textContent = hex;
+    document.getElementById('fmtRgb').textContent = TD.formatRgb(rgb);
+    document.getElementById('fmtHsl').textContent = TD.formatHsl(hsl);
+    document.getElementById('fmtHsv').textContent = 'hsv(' + Math.round(hsv.h) + ', ' + Math.round(hsv.s) + '%, ' + Math.round(hsv.v) + '%)';
+    document.getElementById('fmtCmyk').textContent = 'cmyk(' + Math.round(cmyk.c) + '%, ' + Math.round(cmyk.m) + '%, ' + Math.round(cmyk.y) + '%, ' + Math.round(cmyk.k) + '%)';
+    document.getElementById('fmtLab').textContent = 'lab(' + lab.l.toFixed(1) + ', ' + lab.a.toFixed(1) + ', ' + lab.b.toFixed(1) + ')';
+    document.getElementById('fmtName').textContent = label('colorName_' + name.key);
+    document.getElementById('fmtNameDelta').textContent = 'dE ' + name.distance.toFixed(1);
+  }
+
+  function renderShades() {
+    var host = document.getElementById('shadeList');
+    host.textContent = '';
+    var table = el('table');
+    var head = el('thead');
+    var headRow = el('tr');
+    ['step', 'hex', 'onWhite', 'onBlack'].forEach(function (key) {
+      headRow.appendChild(el('th', null, t('shade' + key.charAt(0).toUpperCase() + key.slice(1))));
+    });
+    head.appendChild(headRow);
+    table.appendChild(head);
+    var body = el('tbody');
+    TD.shadeScale(currentRgb()).forEach(function (shade) {
+      var row = el('tr');
+      row.appendChild(el('td', 'num', String(shade.step)));
+      var hexCell = el('td');
+      var chip = el('span', 'badge');
+      chip.style.setProperty('--swatch', shade.hex);
+      chip.textContent = shade.hex;
+      chip.style.background = shade.hex;
+      chip.style.color = TD.contrastRatio(shade.rgb, WHITE) >= 3 ? '#ffffff' : '#101725';
+      chip.style.borderColor = 'transparent';
+      chip.style.cursor = 'pointer';
+      chip.title = label('paletteUse');
+      chip.addEventListener('click', function () { setCurrent(shade.hex); });
+      hexCell.appendChild(chip);
+      row.appendChild(hexCell);
+      var whiteCell = el('td', 'num', shade.contrastOnWhite.toFixed(2) + ':1');
+      var blackCell = el('td', 'num', shade.contrastOnBlack.toFixed(2) + ':1');
+      row.appendChild(whiteCell);
+      row.appendChild(blackCell);
+      body.appendChild(row);
+    });
+    table.appendChild(body);
+    host.appendChild(table);
+  }
+
+  function renderHistory() {
+    var host = document.getElementById('historyList');
+    var empty = document.getElementById('historyEmpty');
+    host.textContent = '';
+    empty.hidden = state.history.length > 0;
+    state.history.forEach(function (hex) {
+      var button = el('button');
+      button.type = 'button';
+      button.style.setProperty('--swatch', hex);
+      button.title = hex;
+      button.setAttribute('aria-label', hex);
+      button.addEventListener('click', function () { setCurrent(hex); });
+      host.appendChild(button);
+    });
+  }
+
+  function renderHarmony() {
+    var tabs = document.getElementById('harmonyTabs');
+    if (tabs.childElementCount === 0) {
+      HARMONY_LIST.forEach(function (name) {
+        var button = el('button', null, label('harmony' + name.charAt(0).toUpperCase() + name.slice(1)));
+        button.type = 'button';
+        button.dataset.harmony = name;
+        button.addEventListener('click', function () {
+          pushUndo();
+          state.harmony = name;
+          renderHarmony();
+          renderExport();
+          persist();
+        });
+        tabs.appendChild(button);
+      });
+    }
+    Array.prototype.forEach.call(tabs.children, function (button) {
+      var active = button.dataset.harmony === state.harmony;
+      button.setAttribute('aria-pressed', active ? 'true' : 'false');
+      button.textContent = label('harmony' + button.dataset.harmony.charAt(0).toUpperCase() + button.dataset.harmony.slice(1));
+    });
+
+    var colors = harmonyColors();
+    var host = document.getElementById('harmonySwatches');
+    host.textContent = '';
+    colors.forEach(function (rgb) {
+      var hex = TD.rgbToHex(rgb);
+      var button = swatchButton(hex, hex === state.current ? 'is-active' : '', label('paletteUse'));
+      var meta = el('span', 'swatch-meta', Math.round(TD.rgbToHsl(rgb).h) + '\u00B0');
+      button.appendChild(meta);
+      button.addEventListener('click', function () { setCurrent(hex); });
+      host.appendChild(button);
+    });
+    document.getElementById('harmonyBadge').textContent = t('colorCount', { n: colors.length });
+  }
+
+  function renderExtracted() {
+    var host = document.getElementById('extractedSwatches');
+    var empty = document.getElementById('extractedEmpty');
+    host.textContent = '';
+    empty.hidden = state.extracted.length > 0;
+    state.extracted.forEach(function (item) {
+      var button = swatchButton(item.hex, item.hex === state.current ? 'is-active' : '', label('paletteUse'));
+      button.appendChild(el('span', 'swatch-meta', item.share.toFixed(1) + '%'));
+      button.addEventListener('click', function () { setCurrent(item.hex); });
+      host.appendChild(button);
+    });
+  }
+
+  function renderSaved() {
+    var host = document.getElementById('savedSwatches');
+    var empty = document.getElementById('savedEmpty');
+    host.textContent = '';
+    empty.hidden = state.savedPalette.length > 0;
+    state.savedPalette.forEach(function (hex, index) {
+      var button = swatchButton(hex, hex === state.current ? 'is-active' : '', label('removeColor'));
+      button.addEventListener('click', function () { setCurrent(hex); });
+      var remove = el('button', 'swatch-meta');
+      remove.type = 'button';
+      remove.textContent = '\u00D7';
+      remove.title = label('removeColor');
+      remove.setAttribute('aria-label', label('removeColor') + ' ' + hex);
+      remove.addEventListener('click', function (event) {
+        event.stopPropagation();
+        pushUndo();
+        state.savedPalette.splice(index, 1);
+        renderAll();
+        persist();
+      });
+      button.appendChild(remove);
+      host.appendChild(button);
+    });
+  }
+
+  function gradientStops() {
+    if (state.gradient.stops.length >= 2) {
+      return state.gradient.stops.map(function (stop) {
+        return { rgb: TD.parseHex(stop.hex) || currentRgb(), position: stop.position };
+      });
+    }
+    var colors = exportColors();
+    return colors.slice(0, Math.max(2, Math.min(colors.length, 5))).map(function (color, index, list) {
+      return { rgb: color.rgb, position: Math.round((index / Math.max(1, list.length - 1)) * 100) };
+    });
+  }
+
+  function renderGradient() {
+    var typeTabs = document.getElementById('gradientTypeTabs');
+    if (typeTabs.childElementCount === 0) {
+      GRADIENT_TYPES.forEach(function (type) {
+        var button = el('button', null, label('gradient' + type.charAt(0).toUpperCase() + type.slice(1)));
+        button.type = 'button';
+        button.dataset.type = type;
+        button.addEventListener('click', function () {
+          pushUndo();
+          state.gradient.type = type;
+          renderGradient();
+          persist();
+        });
+        typeTabs.appendChild(button);
+      });
+    }
+    Array.prototype.forEach.call(typeTabs.children, function (button) {
+      button.setAttribute('aria-pressed', button.dataset.type === state.gradient.type ? 'true' : 'false');
+      button.textContent = label('gradient' + button.dataset.type.charAt(0).toUpperCase() + button.dataset.type.slice(1));
+    });
+
+    var stops = gradientStops();
+    var css = TD.gradientCss(stops, { type: state.gradient.type, angle: state.gradient.angle });
+    document.getElementById('gradientPreview').style.setProperty('--gradient', css);
+    document.getElementById('gradientCode').textContent = 'background: ' + css + ';';
+    document.getElementById('gradientAngle').value = state.gradient.angle;
+    document.getElementById('gradientAngleValue').textContent = state.gradient.angle + 'deg';
+
+    var list = document.getElementById('stopList');
+    list.textContent = '';
+    if (state.gradient.stops.length >= 2) {
+      state.gradient.stops.forEach(function (stop, index) {
+        var row = el('div', 'stop-row');
+        var chip = el('button', 'stop-chip');
+        chip.type = 'button';
+        chip.style.setProperty('--swatch', stop.hex);
+        chip.setAttribute('aria-label', label('paletteUse') + ' ' + stop.hex);
+        chip.addEventListener('click', function () { setCurrent(stop.hex); });
+        row.appendChild(chip);
+
+        var range = document.createElement('input');
+        range.type = 'range';
+        range.min = '0';
+        range.max = '100';
+        range.value = String(stop.position);
+        range.setAttribute('aria-label', label('gradientStops') + ' ' + stop.hex);
+        range.addEventListener('input', function () {
+          state.gradient.stops[index].position = Number(range.value);
+          renderGradient();
+        });
+        range.addEventListener('change', function () { persist(); });
+        row.appendChild(range);
+
+        row.appendChild(el('span', 'stop-hex', stop.hex + ' ' + stop.position + '%'));
+
+        var remove = el('button', 'btn btn-sm btn-quiet');
+        remove.type = 'button';
+        remove.textContent = '\u00D7';
+        remove.title = label('gradientRemoveStop');
+        remove.setAttribute('aria-label', label('gradientRemoveStop') + ' ' + stop.hex);
+        remove.addEventListener('click', function () {
+          if (state.gradient.stops.length <= 2) return;
+          pushUndo();
+          state.gradient.stops.splice(index, 1);
+          renderGradient();
+          persist();
+        });
+        row.appendChild(remove);
+        list.appendChild(row);
+      });
+    } else {
+      var note = el('p', 'hint', label('gradientReset'));
+      list.appendChild(note);
+    }
+  }
+
+  function renderContrast() {
+    var fg = TD.parseHex(state.contrast.fg);
+    var bg = TD.parseHex(state.contrast.bg);
+    var status = document.getElementById('contrastStatus');
+    if (!fg || !bg) {
+      status.textContent = label('invalidHex');
+      status.hidden = false;
+      return;
+    }
+    status.hidden = true;
+    document.getElementById('fgInput').value = TD.rgbToHex(fg);
+    document.getElementById('bgInput').value = TD.rgbToHex(bg);
+
+    var ratio = TD.contrastRatio(fg, bg);
+    document.getElementById('contrastValue').textContent = ratio.toFixed(2) + ':1';
+    document.getElementById('contrastVerdict').textContent = TD.wcagLevel(ratio, false);
+    document.getElementById('contrastVerdict').className = 'badge ' + (TD.wcagLevel(ratio, false) === 'fail' ? 'fail' : 'pass');
+
+    var demo = document.getElementById('contrastDemo');
+    demo.style.setProperty('--demo-bg', TD.rgbToHex(bg));
+    demo.style.setProperty('--demo-fg', TD.rgbToHex(fg));
+
+    var normal = TD.wcagLevel(ratio, false);
+    var large = TD.wcagLevel(ratio, true);
+    var ui = ratio >= 3 ? 'AA' : 'fail';
+    [['badgeNormal', normal], ['badgeLarge', large], ['badgeUi', ui]].forEach(function (pair) {
+      var node = document.getElementById(pair[0]);
+      node.textContent = pair[1] === 'fail' ? label('contrastFail') : pair[1] + ' ' + label('contrastPass');
+      node.className = 'badge ' + (pair[1] === 'fail' ? 'fail' : 'pass');
+    });
+
+    suggestion = null;
+    var suggestionRow = document.getElementById('suggestionRow');
+    if (ratio < 4.5) {
+      suggestion = TD.nearestAccessible(fg, bg, 4.5);
+      document.getElementById('suggestionText').textContent = t('contrastSuggestionText', {
+        color: suggestion.hex,
+        background: TD.rgbToHex(bg),
+        ratio: suggestion.ratio.toFixed(2) + ':1',
+        min: 'AA 4.5:1'
+      });
+      document.getElementById('suggestionSwatch').textContent = suggestion.hex;
+      document.getElementById('suggestionSwatch').style.background = suggestion.hex;
+      document.getElementById('suggestionSwatch').style.color = TD.contrastRatio(suggestion.rgb, WHITE) >= 3 ? '#ffffff' : '#101725';
+      suggestionRow.hidden = false;
+    } else {
+      document.getElementById('suggestionText').textContent = label('contrastSuggestionNone');
+      suggestionRow.hidden = true;
+    }
+
+    var colors = exportColors();
+    var host = document.getElementById('paletteContrast');
+    host.textContent = '';
+    if (colors.length > 0) {
+      var table = el('table');
+      var head = el('thead');
+      var row = el('tr');
+      row.appendChild(el('th', null, label('formatsTitle')));
+      row.appendChild(el('th', null, label('contrastOnWhiteShort')));
+      row.appendChild(el('th', null, t('contrastOnBlackShort')));
+      head.appendChild(row);
+      table.appendChild(head);
+      var body = el('tbody');
+      colors.forEach(function (color) {
+        var line = el('tr');
+        line.appendChild(el('td', null, color.hex));
+        var onWhite = TD.contrastRatio(color.rgb, WHITE);
+        var onBlack = TD.contrastRatio(color.rgb, BLACK);
+        var whiteCell = el('td', 'num', onWhite.toFixed(2) + ':1');
+        var blackCell = el('td', 'num', onBlack.toFixed(2) + ':1');
+        whiteCell.title = TD.wcagLevel(onWhite, false);
+        blackCell.title = TD.wcagLevel(onBlack, false);
+        line.appendChild(whiteCell);
+        line.appendChild(blackCell);
+        body.appendChild(line);
+      });
+      table.appendChild(body);
+      host.appendChild(table);
+    }
+  }
+
+  function cvdColor(rgb, type) {
+    if (type === 'normal') return TD.normalizeRgb(rgb);
+    if (type === 'achromatopsia') {
+      /* Complete monochromacy: only luminance survives, so the perceived
+       * color is the grey with the same relative luminance. */
+      var grey = TD.round(TD.linearToSrgb(TD.relativeLuminance(rgb)) * 255, 0);
+      return { r: grey, g: grey, b: grey, a: 1 };
+    }
+    return TD.simulateCvd(rgb, type);
+  }
+
+  function renderCvd() {
+    var grid = document.getElementById('cvdGrid');
+    grid.textContent = '';
+    var base = currentRgb();
+    CVD_LIST.forEach(function (item) {
+      var rgb = cvdColor(base, item.key);
+      var hex = TD.rgbToHex(rgb);
+      var card = el('div', 'cvd-item');
+      card.style.setProperty('--cvd', hex);
+      var swatch = el('div', 'cvd-swatch');
+      card.appendChild(swatch);
+      var body = el('div', 'cvd-body');
+      body.appendChild(el('b', null, label('cvd' + item.key.charAt(0).toUpperCase() + item.key.slice(1))));
+      body.appendChild(el('span', null, hex));
+      var prevalence = item.prevalence
+        ? item.prevalence
+        : label('cvdMen') + ' ' + item.men + ' / ' + label('cvdWomen') + ' ' + item.women;
+      body.appendChild(el('em', null, label('cvdPrevalence') + ': ' + prevalence));
+      card.appendChild(body);
+      if (item.key !== 'normal') {
+        card.style.cursor = 'pointer';
+        card.setAttribute('role', 'button');
+        card.setAttribute('tabindex', '0');
+        card.title = label('paletteUse');
+        var pick = function () { setCurrent(hex); };
+        card.addEventListener('click', pick);
+        card.addEventListener('keydown', function (event) {
+          if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); pick(); }
+        });
+      }
+      grid.appendChild(card);
+    });
+
+    var strip = document.getElementById('cvdStrip');
+    strip.textContent = '';
+    var colors = exportColors();
+    colors.forEach(function (color) {
+      var cell = el('div');
+      cell.style.background = TD.rgbToHex(cvdColor(color.rgb, state.cvd));
+      cell.title = color.hex;
+      strip.appendChild(cell);
+    });
+    if (colors.length === 0) {
+      strip.appendChild(el('div'));
+    }
+  }
+
+  function renderExport() {
+    var tabs = document.getElementById('exportTabs');
+    if (tabs.childElementCount === 0) {
+      EXPORT_FORMATS.forEach(function (format) {
+        var button = el('button', null, label('format' + format.charAt(0).toUpperCase() + format.slice(1)));
+        button.type = 'button';
+        button.dataset.format = format;
+        button.addEventListener('click', function () {
+          state.exportFormat = format;
+          renderExport();
+          persist();
+        });
+        tabs.appendChild(button);
+      });
+    }
+    Array.prototype.forEach.call(tabs.children, function (button) {
+      button.setAttribute('aria-pressed', button.dataset.format === state.exportFormat ? 'true' : 'false');
+      button.textContent = label('format' + button.dataset.format.charAt(0).toUpperCase() + button.dataset.format.slice(1));
+    });
+
+    var colors = exportColors();
+    var code = document.getElementById('exportCode');
+    var status = document.getElementById('exportStatus');
+    if (colors.length === 0) {
+      code.textContent = label('exportEmpty');
+      status.hidden = true;
+      return;
+    }
+    var prefix = state.prefix;
+    switch (state.exportFormat) {
+      case 'tailwind':
+        code.textContent = TD.paletteToTailwind(colors, prefix);
+        break;
+      case 'scss':
+        code.textContent = TD.paletteToScss(colors, prefix);
+        break;
+      case 'json':
+        code.textContent = TD.paletteToJson(colors, 'Palette Studio v' + VERSION);
+        break;
+      case 'svg':
+        code.textContent = TD.paletteToSvg(colors);
+        break;
+      case 'png':
+        code.textContent = pngPlan(colors);
+        break;
+      default:
+        code.textContent = TD.paletteToCssVars(colors, prefix);
+    }
+    status.textContent = t('exportCount', { n: colors.length });
+    status.hidden = false;
+    status.className = 'status';
+  }
+
+  function pngPlan(colors) {
+    var width = state.pngSize;
+    var height = Math.round(width / 3);
+    var lines = [
+      'PNG ' + width + ' x ' + height + ' px',
+      label('pngSize') + ': ' + width + ' x ' + height,
+      label('exportCount', { n: colors.length }),
+      ''
+    ];
+    colors.forEach(function (color) {
+      lines.push(color.hex + '  rgb(' + Math.round(color.rgb.r) + ', ' + Math.round(color.rgb.g) + ', ' + Math.round(color.rgb.b) + ')');
+    });
+    return lines.join('\n');
+  }
+
+  function renderAll() {
+    applyTranslations();
+    renderHero();
+    renderShades();
+    renderHistory();
+    renderHarmony();
+    renderExtracted();
+    renderSaved();
+    renderGradient();
+    renderContrast();
+    renderCvd();
+    renderExport();
+  }
+
+  /* --------------------------------------------------------- image loading */
+
+  function handleFile(file) {
+    var status = document.getElementById('paletteStatus');
+    if (!file) return;
+    if (file.type && file.type.indexOf('image/') !== 0) {
+      showToast('paletteStatus', t('paletteNotImage', { name: file.name }), 'error');
+      return;
+    }
+    if (file.size > MAX_FILE_BYTES) {
+      showToast('paletteStatus', t('paletteTooLarge', { max: '40 MB' }), 'error');
+      return;
+    }
+    if (objectUrl) URL.revokeObjectURL(objectUrl);
+    objectUrl = URL.createObjectURL(file);
+    var image = new Image();
+    image.onload = function () {
+      state.sourceName = file.name || 'image';
+      var preview = document.getElementById('sourceImage');
+      preview.src = objectUrl;
+      preview.alt = state.sourceName;
+      document.getElementById('sourcePreview').hidden = false;
+      currentBitmap = image;
+      extractFromImage(image);
+    };
+    image.onerror = function () {
+      showToast('paletteStatus', label('paletteError'), 'error');
+    };
+    image.src = objectUrl;
+    status.textContent = label('paletteLoading');
+    status.className = 'status';
+    status.hidden = false;
+  }
+
+  function drawDemoImage() {
+    /* A deterministic picture: fixed colours on a fixed layout, so the
+     * extracted palette is reproducible in the UI tests. */
+    var canvas = document.createElement('canvas');
+    canvas.width = 640;
+    canvas.height = 400;
+    var ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#f8fafc';
+    ctx.fillRect(0, 0, 640, 400);
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(0, 0, 640, 96);
+    var blobs = [
+      ['#2563eb', 150, 210, 86],
+      ['#f59e0b', 330, 250, 70],
+      ['#10b981', 500, 200, 64],
+      ['#e11d48', 250, 330, 46],
+      ['#7c3aed', 440, 330, 52]
+    ];
+    blobs.forEach(function (blob) {
+      ctx.fillStyle = blob[0];
+      ctx.beginPath();
+      ctx.arc(blob[1], blob[2], blob[3], 0, Math.PI * 2);
+      ctx.fill();
+    });
+    return canvas;
+  }
+
+  function extractFromImage(source) {
+    var width = source.naturalWidth || source.width;
+    var height = source.naturalHeight || source.height;
+    if (!width || !height) {
+      showToast('paletteStatus', label('paletteError'), 'error');
+      return;
+    }
+    var scale = Math.min(1, MAX_DECODE_EDGE / Math.max(width, height));
+    var canvas = document.createElement('canvas');
+    canvas.width = Math.max(1, Math.round(width * scale));
+    canvas.height = Math.max(1, Math.round(height * scale));
+    var ctx = canvas.getContext('2d', { willReadFrequently: true });
+    ctx.drawImage(source, 0, 0, canvas.width, canvas.height);
+    var data;
+    try {
+      data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+    } catch (e) {
+      showToast('paletteStatus', label('paletteError'), 'error');
+      return;
+    }
+    var samples = TD.samplePixels(data, canvas.width, canvas.height);
+    if (samples.length === 0) {
+      showToast('paletteStatus', label('paletteError'), 'error');
+      return;
+    }
+    pushUndo();
+    state.extracted = TD.extractPalette(samples, { k: Number(document.getElementById('paletteK').value) || 6 });
+    renderExtracted();
+    renderCvd();
+    renderExport();
+    persist();
+    showToast('paletteStatus', t('paletteDone', {
+      n: state.extracted.length,
+      pixels: samples.length
+    }), 'ok');
+  }
+
+  /* ----------------------------------------------------------------- events */
+
+  function wireEvents() {
+    var hexInput = document.getElementById('hexInput');
+    hexInput.addEventListener('change', function () {
+      if (!TD.parseHex(hexInput.value)) {
+        hexInput.classList.add('invalid');
+        showToast('hexError', label('invalidHex'), 'error');
+        return;
+      }
+      hexInput.classList.remove('invalid');
+      document.getElementById('hexError').hidden = true;
+      setCurrent(hexInput.value);
+    });
+
+    document.getElementById('colorPicker').addEventListener('input', function (event) {
+      setCurrent(event.target.value, { recordUndo: false });
+    });
+    document.getElementById('colorPicker').addEventListener('change', function (event) {
+      setCurrent(event.target.value);
+    });
+
+    document.getElementById('randomBtn').addEventListener('click', function () {
+      var hex = '#' + Math.floor(Math.random() * 0xffffff).toString(16).padStart(6, '0');
+      setCurrent(hex);
+    });
+
+    document.getElementById('copyHexBtn').addEventListener('click', function () {
+      copyText(state.current, 'hexError');
+    });
+
+    [['rangeH', 'h'], ['rangeS', 's'], ['rangeL', 'l']].forEach(function (pair) {
+      var input = document.getElementById(pair[0]);
+      var commit = function () {
+        var hsl = TD.rgbToHsl(currentRgb());
+        hsl[pair[1]] = Number(input.value);
+        setCurrent(TD.rgbToHex(TD.hslToRgb(hsl)));
+      };
+      input.addEventListener('input', function () {
+        var hsl = TD.rgbToHsl(currentRgb());
+        hsl[pair[1]] = Number(input.value);
+        setCurrent(TD.rgbToHex(TD.hslToRgb(hsl)), { recordUndo: false });
+      });
+      input.addEventListener('change', commit);
+    });
+
+    [['inputR', 'r'], ['inputG', 'g'], ['inputB', 'b']].forEach(function (pair) {
+      var input = document.getElementById(pair[0]);
+      input.addEventListener('change', function () {
+        var rgb = currentRgb();
+        rgb[pair[1]] = TD.clamp(Number(input.value) || 0, 0, 255);
+        setCurrent(TD.rgbToHex(rgb));
+      });
+    });
+
+    document.querySelectorAll('[data-copy]').forEach(function (button) {
+      button.addEventListener('click', function () {
+        var target = document.querySelector(button.getAttribute('data-copy'));
+        if (target) copyText(target.textContent, 'hexError');
+      });
+    });
+
+    document.getElementById('themeBtn').addEventListener('click', function () {
+      setTheme(state.theme === 'dark' ? 'light' : 'dark');
+    });
+
+    document.getElementById('langSelect').addEventListener('change', function (event) {
+      setLocale(event.target.value);
+    });
+
+    document.getElementById('undoBtn').addEventListener('click', undo);
+
+    document.getElementById('harmonyAddBtn').addEventListener('click', function () {
+      pushUndo();
+      harmonyColors().forEach(function (rgb) {
+        var hex = TD.rgbToHex(rgb);
+        if (state.savedPalette.indexOf(hex) < 0 && state.savedPalette.length < 12) {
+          state.savedPalette.push(hex);
+        }
+      });
+      renderAll();
+      persist();
+      showToast('paletteStatus', label('harmonyAdded'), 'ok');
+    });
+
+    var dropZone = document.getElementById('dropZone');
+    ['dragenter', 'dragover'].forEach(function (name) {
+      dropZone.addEventListener(name, function (event) {
+        event.preventDefault();
+        dropZone.classList.add('is-over');
+      });
+    });
+    ['dragleave', 'drop'].forEach(function (name) {
+      dropZone.addEventListener(name, function (event) {
+        event.preventDefault();
+        dropZone.classList.remove('is-over');
+      });
+    });
+    dropZone.addEventListener('drop', function (event) {
+      var files = event.dataTransfer && event.dataTransfer.files;
+      if (files && files.length) handleFile(files[0]);
+    });
+
+    document.getElementById('imageInput').addEventListener('change', function (event) {
+      if (event.target.files && event.target.files.length) handleFile(event.target.files[0]);
+    });
+
+    document.getElementById('demoImageBtn').addEventListener('click', function () {
+      var canvas = drawDemoImage();
+      var image = new Image();
+      image.onload = function () {
+        state.sourceName = 'demo.png';
+        document.getElementById('sourceImage').src = canvas.toDataURL('image/png');
+        document.getElementById('sourceImage').alt = 'demo';
+        document.getElementById('sourcePreview').hidden = false;
+        currentBitmap = image;
+        extractFromImage(image);
+      };
+      image.src = canvas.toDataURL('image/png');
+    });
+
+    document.getElementById('paletteK').addEventListener('input', function (event) {
+      document.getElementById('paletteKValue').textContent = event.target.value;
+    });
+    document.getElementById('paletteK').addEventListener('change', function () {
+      if (currentBitmap) extractFromImage(currentBitmap);
+    });
+
+    document.getElementById('extractBtn').addEventListener('click', function () {
+      if (currentBitmap) {
+        extractFromImage(currentBitmap);
+      } else {
+        showToast('paletteStatus', label('paletteEmpty'), 'error');
+      }
+    });
+
+    document.getElementById('paletteUseBtn').addEventListener('click', function () {
+      var colors = state.extracted.length > 0 ? state.extracted.map(function (item) { return item.hex; }) : [state.current];
+      if (colors.length === 0) return;
+      pushUndo();
+      state.savedPalette = colors.slice(0, 12);
+      renderAll();
+      persist();
+      showToast('paletteStatus', label('paletteSaved'), 'ok');
+    });
+
+    document.getElementById('paletteClearBtn').addEventListener('click', function () {
+      pushUndo();
+      state.savedPalette = [];
+      renderAll();
+      persist();
+    });
+
+    document.getElementById('gradientAngle').addEventListener('input', function (event) {
+      state.gradient.angle = Number(event.target.value);
+      renderGradient();
+      persist();
+    });
+    document.getElementById('gradientAngle').addEventListener('change', persist);
+
+    document.getElementById('addStopBtn').addEventListener('click', function () {
+      if (state.gradient.stops.length < 2) {
+        state.gradient.stops = gradientStops().map(function (stop) {
+          return { hex: TD.rgbToHex(stop.rgb), position: stop.position };
+        });
+      }
+      if (state.gradient.stops.length >= MAX_STOPS) {
+        showToast('gradientStatus', t('gradientMaxStops', { n: MAX_STOPS }), 'error');
+        return;
+      }
+      pushUndo();
+      var last = state.gradient.stops[state.gradient.stops.length - 1].position;
+      state.gradient.stops.push({ hex: state.current, position: TD.clamp(last + 10, 0, 100) });
+      state.gradient.stops.sort(function (a, b) { return a.position - b.position; });
+      renderGradient();
+      persist();
+    });
+
+    document.getElementById('gradientResetBtn').addEventListener('click', function () {
+      pushUndo();
+      state.gradient.stops = [];
+      renderGradient();
+      persist();
+    });
+
+    document.getElementById('copyGradientBtn').addEventListener('click', function () {
+      copyText(document.getElementById('gradientCode').textContent, 'gradientStatus');
+    });
+
+    document.getElementById('downloadSvgBtn').addEventListener('click', function () {
+      var stops = gradientStops();
+      var svg = TD.gradientSvg(stops, { type: state.gradient.type, angle: state.gradient.angle, width: 1200, height: 675 });
+      downloadText('palette-gradient.svg', svg, 'image/svg+xml;charset=utf-8');
+    });
+
+    document.getElementById('fgInput').addEventListener('change', function (event) {
+      if (!TD.parseHex(event.target.value)) {
+        showToast('contrastStatus', label('invalidHex'), 'error');
+        return;
+      }
+      pushUndo();
+      state.contrast.fg = TD.rgbToHex(TD.parseHex(event.target.value));
+      renderContrast();
+      persist();
+    });
+
+    document.getElementById('bgInput').addEventListener('change', function (event) {
+      if (!TD.parseHex(event.target.value)) {
+        showToast('contrastStatus', label('invalidHex'), 'error');
+        return;
+      }
+      pushUndo();
+      state.contrast.bg = TD.rgbToHex(TD.parseHex(event.target.value));
+      renderContrast();
+      persist();
+    });
+
+    document.getElementById('swapBtn').addEventListener('click', function () {
+      pushUndo();
+      var fg = state.contrast.fg;
+      state.contrast.fg = state.contrast.bg;
+      state.contrast.bg = fg;
+      renderContrast();
+      persist();
+    });
+
+    document.getElementById('useBaseBtn').addEventListener('click', function () {
+      pushUndo();
+      state.contrast.fg = state.current;
+      renderContrast();
+      persist();
+    });
+
+    document.getElementById('applySuggestionBtn').addEventListener('click', function () {
+      if (!suggestion) return;
+      pushUndo();
+      state.contrast.fg = suggestion.hex;
+      setCurrent(suggestion.hex, { recordUndo: false });
+      renderContrast();
+      persist();
+    });
+
+    document.getElementById('prefixInput').addEventListener('change', function (event) {
+      var value = String(event.target.value || '').trim();
+      if (!/^[a-zA-Z][a-zA-Z0-9_-]{0,23}$/.test(value)) {
+        event.target.value = state.prefix;
+        return;
+      }
+      state.prefix = value;
+      renderExport();
+      persist();
+    });
+
+    document.getElementById('copyExportBtn').addEventListener('click', function () {
+      copyText(document.getElementById('exportCode').textContent, 'exportStatus');
+    });
+
+    document.getElementById('downloadExportBtn').addEventListener('click', function () {
+      var colors = exportColors();
+      if (colors.length === 0) return;
+      var format = state.exportFormat;
+      if (format === 'png') {
+        renderPng(colors);
+        return;
+      }
+      var files = {
+        css: ['palette.css', TD.paletteToCssVars(colors, state.prefix), 'text/css;charset=utf-8'],
+        tailwind: ['tailwind.config.js', TD.paletteToTailwind(colors, state.prefix), 'text/javascript;charset=utf-8'],
+        scss: ['palette.scss', TD.paletteToScss(colors, state.prefix), 'text/x-scss;charset=utf-8'],
+        json: ['palette.json', TD.paletteToJson(colors, 'Palette Studio v' + VERSION), 'application/json;charset=utf-8'],
+        svg: ['palette.svg', TD.paletteToSvg(colors), 'image/svg+xml;charset=utf-8']
+      };
+      var entry = files[format];
+      if (entry) downloadText(entry[0], entry[1], entry[2]);
+    });
+
+    document.addEventListener('keydown', function (event) {
+      var target = event.target;
+      var typing = target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT' || target.isContentEditable);
+      if ((event.ctrlKey || event.metaKey) && String(event.key).toLowerCase() === 'z') {
+        event.preventDefault();
+        undo();
+        return;
+      }
+      if (typing || event.ctrlKey || event.metaKey || event.altKey) return;
+      if (String(event.key).toLowerCase() === 'r') {
+        document.getElementById('randomBtn').click();
+      } else if (String(event.key).toLowerCase() === 'c') {
+        document.getElementById('copyHexBtn').click();
+      }
+    });
+
+    window.addEventListener('beforeunload', persist);
+  }
+
+  function renderPng(colors) {
+    if (!colors.length) return;
+    var width = state.pngSize;
+    var perSwatch = Math.round(width / colors.length);
+    var height = Math.round(width / 3);
+    var canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    var ctx = canvas.getContext('2d');
+    colors.forEach(function (color, index) {
+      ctx.fillStyle = TD.rgbToHex(color.rgb);
+      ctx.fillRect(index * perSwatch, 0, perSwatch, height);
+      ctx.fillStyle = TD.contrastRatio(color.rgb, WHITE) >= 3 ? '#ffffff' : '#101725';
+      ctx.font = '600 22px ui-monospace, monospace';
+      ctx.fillText(TD.rgbToHex(color.rgb), index * perSwatch + 18, height - 24);
+    });
+    canvas.toBlob(function (blob) {
+      if (blob) downloadBlob('palette.png', blob);
+    }, 'image/png');
+  }
+
+  /* ------------------------------------------------------------------ init */
+
+  function init() {
+    restore();
+    state.locale = detectLocale();
+    document.getElementById('langSelect').value = state.locale;
+    var savedTheme = safeGet('theme');
+    if (savedTheme === 'dark' || savedTheme === 'light') {
+      setTheme(savedTheme, false);
+    } else {
+      setTheme('light', false);
+    }
+    document.getElementById('prefixInput').value = state.prefix;
+    document.getElementById('paletteKValue').textContent = document.getElementById('paletteK').value;
+    if (state.history.indexOf(state.current) < 0) rememberColor(state.current);
+    wireEvents();
+    renderAll();
+    document.getElementById('undoBtn').disabled = true;
+
+    if ('serviceWorker' in navigator && window.location.protocol.indexOf('http') === 0) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('sw.js').catch(function () { /* offline is optional */ });
+      });
+    }
+    window.TD_APP = { state: state, render: renderAll, label: label, t: t, toCyrillic: toCyrillic, cvdColor: cvdColor, VERSION: VERSION };
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();</script>
+</body>
+</html>

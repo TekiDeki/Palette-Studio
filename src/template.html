@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="ro" class="theme-light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#2563eb">
+<meta name="color-scheme" content="light dark">
+<meta name="description" content="Studio de culori offline: extragi paleta dintr-o fotografie, generezi armonii si gradiente, verifici contrastul WCAG si simulezi daltonismul. Nimic nu pleaca din browser.">
+<meta name="author" content="Kristian Mario Miskovic (TekiDeki)">
+<meta name="robots" content="index, follow">
+<meta property="og:title" content="Palette Studio · TekiDeki">
+<meta property="og:description" content="Palete din imagini, armonii, gradiente, contrast WCAG si simulare de daltonism. Un singur fisier HTML, fara server.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://tekideki.github.io/Palette-Studio/">
+<link rel="canonical" href="https://tekideki.github.io/Palette-Studio/">
+<link rel="alternate" hreflang="ro" href="https://tekideki.github.io/Palette-Studio/?lang=ro">
+<link rel="alternate" hreflang="en" href="https://tekideki.github.io/Palette-Studio/?lang=en">
+<link rel="alternate" hreflang="sr-Latn" href="https://tekideki.github.io/Palette-Studio/?lang=sr-Latn">
+<link rel="alternate" hreflang="sr-Cyrl" href="https://tekideki.github.io/Palette-Studio/?lang=sr-Cyrl">
+<link rel="alternate" hreflang="x-default" href="https://tekideki.github.io/Palette-Studio/">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="favicon.ico">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<title>Palette Studio · TekiDeki</title>
+<style>/*CSS*/</style>
+<script>try{if(localStorage.getItem('tekideki-palette-theme')==='dark'){document.documentElement.classList.remove('theme-light');document.documentElement.classList.add('theme-dark');}}catch(e){}</script>
+</head>
+<body>
+<a class="skip-link" href="#main" data-i18n="skipToContent">Sari la continut</a>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="#main">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <span class="brand-text">
+        <span data-i18n="appName">Palette Studio</span>
+        <span class="brand-tagline" data-i18n="tagline">Culori, palete si gradiente, facute local.</span>
+      </span>
+    </a>
+    <div class="topbar-actions">
+      <button id="undoBtn" class="icon-btn" type="button" disabled>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10H9"/></svg>
+        <span data-i18n="undo">Anuleaza</span>
+      </button>
+      <button id="themeBtn" class="icon-btn" type="button" aria-pressed="false">
+        <svg class="theme-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"/></svg>
+        <svg class="theme-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4m11.4-11.4 1.4-1.4"/></svg>
+        <span id="themeLabel" data-i18n="themeDark">Tema inchisa</span>
+      </button>
+      <label class="sr-only" for="langSelect" data-i18n="language">Limba interfetei</label>
+      <select id="langSelect" aria-label="Interface language">
+        <option value="ro" data-base="Română">Română</option>
+        <option value="en" data-base="English">English</option>
+        <option value="sr-latn" data-base="Srpski (latinica)">Srpski (latinica)</option>
+        <option value="sr-cyrl" data-base="Srpski (ćirilica)">Srpski (ćirilica)</option>
+      </select>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <section class="hero">
+    <div>
+      <span class="eyebrow" data-i18n="eyebrow">STUDIO DE CULORI, FARA SERVER</span>
+      <h1 data-i18n="heroTitle">Culoarea potrivita, masurata corect.</h1>
+      <p class="hero-lede" data-i18n="heroSubtitle">Extragi o paleta dintr-o fotografie, generezi armonii si gradiente, verifici contrastul WCAG si vezi cum arata totul pentru ochii cu daltonism. Totul ruleaza in browser: niciun fisier nu pleaca de pe dispozitivul tau.</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="#sec-color" data-i18n="heroCta">Incepe cu o culoare</a>
+        <a class="btn" href="#sec-about" data-i18n="secAbout">Despre</a>
+      </div>
+      <p class="hero-note" data-i18n="heroPrivacy">Fara cont, fara incarcare, fara analytics.</p>
+    </div>
+    <div class="hero-card">
+      <div id="heroSwatch" class="hero-swatch"><span id="heroHex">#2563eb</span><span id="heroName">azuriu</span></div>
+      <div class="hero-meta">
+        <div><b id="metaRgb">rgb(37, 99, 235)</b><span>RGB</span></div>
+        <div><b id="metaHsl">hsl(221, 83%, 53%)</b><span>HSL</span></div>
+        <div><b id="metaContrast">5.17:1</b><span data-i18n="contrastOnWhiteShort">pe alb</span></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<main id="main" class="wrap">
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+  <!-- 1. culoare de baza -->
+  <div class="section-head" id="sec-color">
+    <span class="step">01</span>
+    <h2 data-i18n="colorTitle">1. Alege culoarea de baza</h2>
+    <p data-i18n="colorHint">Scrie un cod hex, foloseste selectorul sau ia culoarea dintr-o imagine. Totul se salveaza local.</p>
+  </div>
+  <div class="grid grid-2">
+    <section class="panel">
+      <div class="hex-row">
+        <div>
+          <label class="field-label" for="hexInput" data-i18n="hexLabel">Cod hex</label>
+          <input id="hexInput" class="text-input" type="text" value="#2563eb" spellcheck="false" autocomplete="off" aria-describedby="hexError">
+        </div>
+        <div>
+          <span class="field-label" data-i18n="pickColor">Selector de culoare</span>
+          <input id="colorPicker" type="color" value="#2563eb" aria-label="Color picker">
+        </div>
+        <div class="row">
+          <button id="randomBtn" class="btn btn-sm" type="button" data-i18n="randomColor">Culoare aleatoare</button>
+          <button id="copyHexBtn" class="btn btn-sm btn-primary" type="button" data-i18n="copyHex">Copiaza hex</button>
+        </div>
+      </div>
+      <p id="hexError" class="status error" role="alert" hidden></p>
+
+      <div class="field">
+        <label class="field-label" for="rangeH" data-i18n="h">Nuanta</label>
+        <div class="range-row"><input id="rangeH" type="range" min="0" max="359" step="1" value="221"><span class="range-value" id="valueH">221</span></div>
+      </div>
+      <div class="field">
+        <label class="field-label" for="rangeS" data-i18n="s">Saturatie</label>
+        <div class="range-row"><input id="rangeS" type="range" min="0" max="100" step="1" value="83"><span class="range-value" id="valueS">83%</span></div>
+      </div>
+      <div class="field">
+        <label class="field-label" for="rangeL" data-i18n="l">Luminozitate</label>
+        <div class="range-row"><input id="rangeL" type="range" min="0" max="100" step="1" value="53"><span class="range-value" id="valueL">53%</span></div>
+      </div>
+
+      <div class="field">
+        <span class="field-label">RGB</span>
+        <div class="grid grid-3">
+          <div><label class="field-label" for="inputR" data-i18n="rLabel">Rosu</label><input id="inputR" class="text-input" type="number" min="0" max="255" value="37"></div>
+          <div><label class="field-label" for="inputG" data-i18n="gLabel">Verde</label><input id="inputG" class="text-input" type="number" min="0" max="255" value="99"></div>
+          <div><label class="field-label" for="inputB" data-i18n="bLabel">Albastru</label><input id="inputB" class="text-input" type="number" min="0" max="255" value="235"></div>
+        </div>
+      </div>
+
+      <div class="field">
+        <span class="field-label" data-i18n="formatsTitle">Formate</span>
+        <dl class="formats">
+          <div class="format-row"><dt>HEX</dt><dd id="fmtHex">#2563eb</dd><td><button class="btn btn-sm btn-quiet" type="button" data-copy="#fmtHex" data-i18n="copyCode">Copiaza codul</button></td></div>
+          <div class="format-row"><dt>RGB</dt><dd id="fmtRgb">rgb(37, 99, 235)</dd><td><button class="btn btn-sm btn-quiet" type="button" data-copy="#fmtRgb" data-i18n="copyCode">Copiaza codul</button></td></div>
+          <div class="format-row"><dt>HSL</dt><dd id="fmtHsl">hsl(221, 83%, 53%)</dd><td><button class="btn btn-sm btn-quiet" type="button" data-copy="#fmtHsl" data-i18n="copyCode">Copiaza codul</button></td></div>
+          <div class="format-row"><dt>HSV</dt><dd id="fmtHsv">hsv(221, 84%, 92%)</dd><td><button class="btn btn-sm btn-quiet" type="button" data-copy="#fmtHsv" data-i18n="copyCode">Copiaza codul</button></td></div>
+          <div class="format-row"><dt>CMYK</dt><dd id="fmtCmyk">cmyk(84%, 58%, 0%, 8%)</dd><td><button class="btn btn-sm btn-quiet" type="button" data-copy="#fmtCmyk" data-i18n="copyCode">Copiaza codul</button></td></div>
+          <div class="format-row"><dt>LAB</dt><dd id="fmtLab">lab(48.5, 40.1, -74.2)</dd><td><button class="btn btn-sm btn-quiet" type="button" data-copy="#fmtLab" data-i18n="copyCode">Copiaza codul</button></td></div>
+          <div class="format-row"><dt data-i18n="nearestName">Cel mai apropiat nume</dt><dd id="fmtName">azuriu</dd><td><span class="badge" id="fmtNameDelta">dE 14.5</span></td></div>
+        </dl>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <div>
+          <h3 data-i18n="tintShadeTitle">Nuante si umbre</h3>
+          <p class="hint" data-i18n="tintShadeHint">Scala generata din culoarea de baza, cu contrastul pe alb si pe negru pentru fiecare treapta.</p>
+        </div>
+      </div>
+      <div id="shadeList" class="contrast-scale"></div>
+
+      <div class="panel-head" style="margin-top:18px">
+        <div>
+          <h3 data-i18n="historyTitle">Ultimele culori</h3>
+          <p class="hint" data-i18n="historyHint">Culorile folosite raman salvate in browser.</p>
+        </div>
+      </div>
+      <div id="historyList" class="history"></div>
+      <p id="historyEmpty" class="empty" data-i18n="historyEmpty">Culorile folosite apar aici.</p>
+    </section>
+  </div>
+
+  <!-- 2. armonii -->
+  <div class="section-head" id="sec-harmony">
+    <span class="step">02</span>
+    <h2 data-i18n="harmonyTitle">2. Armonii</h2>
+    <p data-i18n="harmonyHint">Reguli clasice de rotire a nuantei in jurul cercului de culori.</p>
+  </div>
+  <section class="panel">
+    <div id="harmonyTabs" class="segmented" role="group" aria-label="Harmony scheme"></div>
+    <div id="harmonySwatches" class="chip-row"></div>
+    <div class="row" style="margin-top:12px">
+      <button id="harmonyAddBtn" class="btn btn-primary btn-sm" type="button" data-i18n="harmonyAdd">Adauga in paleta</button>
+      <span class="badge" id="harmonyBadge">3 culori</span>
+    </div>
+  </section>
+
+  <!-- 3. paleta din imagine -->
+  <div class="section-head" id="sec-palette">
+    <span class="step">03</span>
+    <h2 data-i18n="paletteTitle">3. Paleta dintr-o imagine</h2>
+    <p data-i18n="paletteHint">Trage o fotografie aici sau alege un fisier. Algoritmul k-means gaseste culorile dominante si cat la suta din imagine ocupa fiecare.</p>
+  </div>
+  <div class="grid grid-2">
+    <section class="panel">
+      <div id="dropZone" class="drop">
+        <p class="drop-title" data-i18n="paletteDropTitle">Trage imaginea aici</p>
+        <p class="drop-hint" data-i18n="paletteDropHint">PNG, JPEG, WebP, GIF sau AVIF. Imaginea ramane in memoria paginii.</p>
+        <div class="drop-actions">
+          <label class="btn btn-primary btn-sm" for="imageInput" data-i18n="paletteChoose">Alege imagine</label>
+          <button id="demoImageBtn" class="btn btn-sm" type="button" data-i18n="paletteDemo">Imagine demonstrativa</button>
+        </div>
+      </div>
+      <input id="imageInput" type="file" accept="image/*" hidden>
+      <div class="field">
+        <label class="field-label" for="paletteK" data-i18n="paletteColors">Culori extrase</label>
+        <div class="range-row"><input id="paletteK" type="range" min="2" max="12" step="1" value="6"><span class="range-value" id="paletteKValue">6</span></div>
+      </div>
+      <div class="row">
+        <button id="extractBtn" class="btn btn-primary" type="button" data-i18n="paletteExtract">Extrage paleta</button>
+        <button id="paletteUseBtn" class="btn btn-sm" type="button" data-i18n="paletteSave">Salveaza paleta</button>
+      </div>
+      <p id="paletteStatus" class="status" role="status" hidden></p>
+      <div id="sourcePreview" class="source-preview" hidden><img id="sourceImage" alt=""></div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <div>
+          <h3 data-i18n="paletteResultTitle">Culori dominante</h3>
+          <p class="hint" data-i18n="paletteResultHint">Apasa o culoare ca sa devina baza. Procentajul arata cat ocupa in imagine.</p>
+        </div>
+        <button id="paletteClearBtn" class="btn btn-sm btn-quiet" type="button" data-i18n="paletteClear">Goleste paleta</button>
+      </div>
+      <div id="extractedSwatches" class="chip-row"></div>
+      <p id="extractedEmpty" class="empty" data-i18n="paletteEmpty">Nicio imagine incarcata inca.</p>
+
+      <div class="panel-head" style="margin-top:18px">
+        <div>
+          <h3 data-i18n="savedTitle">Paleta salvata</h3>
+          <p class="hint" data-i18n="savedHint">Aceasta paleta este folosita pentru gradient si pentru export.</p>
+        </div>
+      </div>
+      <div id="savedSwatches" class="chip-row"></div>
+      <p id="savedEmpty" class="empty" data-i18n="savedEmpty">Paleta salvata este goala. Adauga culori din armonii sau din imagine.</p>
+    </section>
+  </div>
+
+  <!-- 4. gradient -->
+  <div class="section-head" id="sec-gradient">
+    <span class="step">04</span>
+    <h2 data-i18n="gradientTitle">4. Gradient</h2>
+    <p data-i18n="gradientHint">Construieste un gradient din paleta si exporta-l ca CSS sau SVG.</p>
+  </div>
+  <section class="panel">
+    <div class="grid grid-2">
+      <div>
+        <div class="field">
+          <span class="field-label" data-i18n="gradientType">Tip</span>
+          <div id="gradientTypeTabs" class="segmented" role="group" aria-label="Gradient type"></div>
+        </div>
+        <div class="field">
+          <label class="field-label" for="gradientAngle" data-i18n="gradientAngle">Unghi</label>
+          <div class="range-row"><input id="gradientAngle" type="range" min="0" max="359" step="1" value="135"><span class="range-value" id="gradientAngleValue">135deg</span></div>
+        </div>
+        <div class="field">
+          <span class="field-label" data-i18n="gradientStops">Puncte de culoare</span>
+          <div id="stopList" class="stop-list"></div>
+        </div>
+        <div class="row">
+          <button id="addStopBtn" class="btn btn-sm" type="button" data-i18n="gradientAddStop">Adauga punct</button>
+          <button id="gradientResetBtn" class="btn btn-sm btn-quiet" type="button" data-i18n="gradientReset">Reset la paleta</button>
+        </div>
+        <p id="gradientStatus" class="status" role="status" hidden></p>
+      </div>
+      <div>
+        <div id="gradientPreview" class="gradient-preview" role="img" aria-label="Gradient preview"></div>
+        <span class="field-label" style="margin-top:12px;display:block" data-i18n="gradientCssLabel">Cod CSS</span>
+        <pre id="gradientCode" class="code" tabindex="0"></pre>
+        <div class="row">
+          <button id="copyGradientBtn" class="btn btn-sm btn-primary" type="button" data-i18n="copyCode">Copiaza codul</button>
+          <button id="downloadSvgBtn" class="btn btn-sm" type="button" data-i18n="downloadFile">Descarca</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. contrast -->
+  <div class="section-head" id="sec-contrast">
+    <span class="step">05</span>
+    <h2 data-i18n="contrastTitle">5. Verificare contrast</h2>
+    <p data-i18n="contrastHint">Raportul WCAG 2.x intre text si fundal, cu pragurile exacte.</p>
+  </div>
+  <div class="grid grid-2">
+    <section class="panel">
+      <div class="grid grid-2">
+        <div class="field">
+          <label class="field-label" for="fgInput" data-i18n="contrastForeground">Culoarea textului</label>
+          <input id="fgInput" class="text-input" type="text" value="#2563eb" spellcheck="false" autocomplete="off">
+        </div>
+        <div class="field">
+          <label class="field-label" for="bgInput" data-i18n="contrastBackground">Culoarea fundalului</label>
+          <input id="bgInput" class="text-input" type="text" value="#ffffff" spellcheck="false" autocomplete="off">
+        </div>
+      </div>
+      <div class="row">
+        <button id="swapBtn" class="btn btn-sm" type="button" data-i18n="contrastSwap">Inverseaza</button>
+        <button id="useBaseBtn" class="btn btn-sm btn-quiet" type="button" data-i18n="contrastUseBase">Foloseste culoarea de baza</button>
+      </div>
+      <p id="contrastStatus" class="status error" role="alert" hidden></p>
+
+      <div class="contrast-tests">
+        <div class="contrast-test"><b data-i18n="contrastNormalText">Text normal</b><small data-i18n="contrastLevelAA">AA: minim 4.5:1 pentru text normal, 3:1 pentru text mare</small><span class="badge" id="badgeNormal">-</span></div>
+        <div class="contrast-test"><b data-i18n="contrastLargeText">Text mare</b><small data-i18n="contrastLargeRule">AA mare: 3:1, AAA mare: 4.5:1</small><span class="badge" id="badgeLarge">-</span></div>
+        <div class="contrast-test"><b data-i18n="contrastUiText">Elemente de interfata</b><small data-i18n="contrastLevelUi">Elemente grafice: minim 3:1</small><span class="badge" id="badgeUi">-</span></div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <div>
+          <span class="field-label" data-i18n="contrastRatioLabel">Raport de contrast</span>
+          <span class="contrast-ratio" id="contrastValue">5.17:1</span>
+        </div>
+        <span class="badge" id="contrastVerdict">AA</span>
+      </div>
+      <div id="contrastDemo" class="contrast-demo">
+        <p class="big">Aa - 24 px bold</p>
+        <p class="small" data-i18n="contrastDemoText">Text normal de 14 px pe fundalul ales, exact asa cum il vede cititorul.</p>
+      </div>
+      <div class="field">
+        <span class="field-label" data-i18n="contrastSuggest">Sugestie accesibila</span>
+        <p class="hint" id="suggestionText"></p>
+        <div class="row" id="suggestionRow" hidden>
+          <button id="applySuggestionBtn" class="btn btn-sm btn-primary" type="button" data-i18n="contrastApply">Aplica sugestia</button>
+          <span class="badge" id="suggestionSwatch">-</span>
+        </div>
+      </div>
+      <div id="paletteContrast" class="contrast-scale"></div>
+    </section>
+  </div>
+
+  <!-- 6. daltonism -->
+  <div class="section-head" id="sec-cvd">
+    <span class="step">06</span>
+    <h2 data-i18n="cvdTitle">6. Simulare daltonism</h2>
+    <p data-i18n="cvdHint">Matricele Machado, Oliveira si Fernandes (2009), severitate maxima. Aproape 1 din 12 barbati vede altfel rosul si verdele.</p>
+  </div>
+  <section class="panel">
+    <div id="cvdGrid" class="cvd-grid"></div>
+    <span class="field-label" style="margin-top:16px;display:block" data-i18n="cvdPaletteTitle">Paleta salvata, aceeasi simulare</span>
+    <div id="cvdStrip" class="cvd-strip"></div>
+    <p class="hint" style="margin-top:10px" data-i18n="cvdNote">Simularea este un model matematic, nu o diagnosticare. Verifica intotdeauna si cu o a doua unealta daca proiectul este critic.</p>
+  </section>
+
+  <!-- 7. export -->
+  <div class="section-head" id="sec-export">
+    <span class="step">07</span>
+    <h2 data-i18n="exportTitle">7. Export</h2>
+    <p data-i18n="exportHint">Formate generate local, fara nicio cerere in retea.</p>
+  </div>
+  <section class="panel">
+    <div class="row" style="justify-content:space-between">
+      <div id="exportTabs" class="segmented export-tabs" role="group" aria-label="Export format"></div>
+      <div class="field" style="margin:0;max-width:220px">
+        <label class="field-label" for="prefixInput" data-i18n="exportPrefix">Prefix pentru variabile</label>
+        <input id="prefixInput" class="text-input" type="text" value="brand" spellcheck="false" autocomplete="off">
+      </div>
+    </div>
+    <pre id="exportCode" class="code" tabindex="0"></pre>
+    <div class="row">
+      <button id="copyExportBtn" class="btn btn-sm btn-primary" type="button" data-i18n="copyCode">Copiaza codul</button>
+      <button id="downloadExportBtn" class="btn btn-sm" type="button" data-i18n="downloadFile">Descarca</button>
+    </div>
+    <p id="exportStatus" class="status" role="status" hidden></p>
+  </section>
+
+  <!-- despre -->
+  <div class="section-head" id="sec-about">
+    <h2 data-i18n="aboutTitle">Despre aplicatie</h2>
+  </div>
+  <section class="panel">
+    <p data-i18n="aboutText">Palette Studio este un singur fisier HTML.</p>
+    <div class="about-grid">
+      <div class="about-block">
+        <h4 data-i18n="aboutPrivacyTitle">Confidentialitate</h4>
+        <p data-i18n="aboutPrivacy">Imaginile sunt decode in memoria paginii si nu sunt incarcate nicaieri.</p>
+      </div>
+      <div class="about-block">
+        <h4 data-i18n="aboutLimitsTitle">Limite oneste</h4>
+        <p data-i18n="aboutLimits">Extragerea paletei depinde de iluminarea fotografiei.</p>
+      </div>
+      <div class="about-block">
+        <h4 data-i18n="aboutKeysTitle">Scurtaturi</h4>
+        <ul>
+          <li><span class="kbd">Ctrl</span> + <span class="kbd">Z</span> <span data-i18n="aboutKeyUndo">Anuleaza ultima actiune</span></li>
+          <li><span class="kbd">R</span> <span data-i18n="aboutKeyRandom">Culoare aleatoare</span></li>
+          <li><span class="kbd">C</span> <span data-i18n="aboutKeyCopy">Copiaza codul hex</span></li>
+        </ul>
+        <p style="margin-top:8px"><span class="badge" id="versionBadge">v1</span> <a href="https://github.com/TekiDeki/Palette-Studio" target="_blank" rel="noopener noreferrer" data-i18n="aboutSource">Codul sursa</a></p>
+      </div>
+    </div>
+    <p class="hint" style="margin-top:14px" data-i18n="aboutLicense">Licenta Apache-2.0. Codul sursa este public pe GitHub.</p>
+    <p class="hint" style="margin-top:6px"><a href="https://paypal.me/TekiDeki" target="_blank" rel="noopener noreferrer" data-i18n="aboutSupport">Sustine proiectul</a></p>
+  </section>
+
+  <footer class="foot">
+    <span>Palette Studio · TekiDeki · Vrsac</span>
+    <a href="https://freehtml.dev" target="_blank" rel="noopener noreferrer">freehtml.dev</a>
+    <a href="https://github.com/TekiDeki/Palette-Studio" target="_blank" rel="noopener noreferrer">GitHub</a>
+  </footer>
+</main>
+
+<script>/*COLOR*/</script>
+<script>/*PALETTE*/</script>
+<script>/*JS*/</script>
+</body>
+</html>
