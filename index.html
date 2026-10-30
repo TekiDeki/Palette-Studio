@@ -911,7 +911,37 @@ input[type="color"]::-webkit-color-swatch { border: none; border-radius: 6px; }
 
 .toast.error { border-color: color-mix(in srgb, var(--bad) 50%, var(--line)); background: var(--bad-bg); color: var(--bad); }
 
-.toast[hidden] { display: none; }</style>
+.toast[hidden] { display: none; }
+
+
+  /* regula casei: tinte de atingere pe mobil */
+  @media (pointer: coarse), (max-width: 700px) {
+    #langSelect { min-height: 34px; }
+    #randomBtn { min-height: 34px; display: inline-flex; align-items: center; }
+    #copyHexBtn { min-height: 34px; display: inline-flex; align-items: center; }
+    #rangeH { min-height: 34px; display: inline-flex; align-items: center; }
+    #rangeS { min-height: 34px; display: inline-flex; align-items: center; }
+    #rangeL { min-height: 34px; display: inline-flex; align-items: center; }
+    .btn.btn-sm { min-height: 34px; display: inline-flex; align-items: center; }
+    button { min-height: 34px; display: inline-flex; align-items: center; }
+    #harmonyAddBtn { min-height: 34px; display: inline-flex; align-items: center; }
+    #demoImageBtn { min-height: 34px; display: inline-flex; align-items: center; }
+    #paletteK { min-height: 34px; display: inline-flex; align-items: center; }
+    #paletteUseBtn { min-height: 34px; display: inline-flex; align-items: center; }
+    #paletteClearBtn { min-height: 34px; display: inline-flex; align-items: center; }
+    #gradientAngle { min-height: 34px; display: inline-flex; align-items: center; }
+    #addStopBtn { min-height: 34px; display: inline-flex; align-items: center; }
+    #gradientResetBtn { min-height: 34px; display: inline-flex; align-items: center; }
+    #copyGradientBtn { min-height: 34px; display: inline-flex; align-items: center; }
+    #downloadSvgBtn { min-height: 34px; display: inline-flex; align-items: center; }
+    #swapBtn { min-height: 34px; display: inline-flex; align-items: center; }
+    #useBaseBtn { min-height: 34px; display: inline-flex; align-items: center; }
+    #copyExportBtn { min-height: 34px; display: inline-flex; align-items: center; }
+    #downloadExportBtn { min-height: 34px; display: inline-flex; align-items: center; }
+    a { padding-block: 10px; }
+    a:not(:where(p, li, figcaption) a) { min-height: 34px; display: inline-flex; align-items: center; }
+  }
+</style>
 <script>try{if(localStorage.getItem('tekideki-palette-theme')==='dark'){document.documentElement.classList.remove('theme-light');document.documentElement.classList.add('theme-dark');}}catch(e){}</script>
 </head>
 <body>
