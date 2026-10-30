@@ -3,7 +3,7 @@
   "name": "Palette Studio · TekiDeki",
   "short_name": "Palette",
   "description": "Extract a palette from an image, build harmonies and gradients, check WCAG contrast and simulate colour blindness. One HTML file, nothing uploaded, works offline.",
-  "lang": "ro",
+  "lang": "en",
   "dir": "ltr",
   "start_url": "./",
   "scope": "./",
