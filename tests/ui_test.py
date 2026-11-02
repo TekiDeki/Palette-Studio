@@ -2,13 +2,13 @@
 """Palette Studio - end to end UI test (Playwright + Chromium).
 
 Runs the built index.html over a local HTTP server and drives it the way a
-visitor would, on desktop and on a touch tablet:
+visitor would, on desktop, a touch tablet and a small phone:
 
     python3 tests/ui_test.py
 
 Checks: load, colour input, WCAG numbers, palette extraction, gradient code,
 export switching, persistence after reload, undo, language switching to
-Serbian Cyrillic, and zero page or console errors.
+Serbian Cyrillic, installation help, mobile touch targets and zero browser errors.
 
 SPDX-License-Identifier: Apache-2.0
 Copyright 2026 Kristian Mario Miskovic (TekiDeki)
@@ -114,7 +114,7 @@ def run_desktop(browser, url):
 
     # ------------------------------------------------------ palette extraction
     page.locator("#demoImageBtn").click()
-    page.wait_for_function("document.querySelectorAll('#extractedSwatches .swatch').length === 6", timeout=10000)
+    page.wait_for_function("() => document.querySelectorAll('#extractedSwatches .swatch').length === 6", timeout=10000)
     check(page.locator("#extractedSwatches .swatch").count() == 6, "the demo image yields six colors")
     check(page.locator("#paletteStatus").inner_text().startswith("6 colors extracted"),
           "the extraction status reports the count")
@@ -125,7 +125,7 @@ def run_desktop(browser, url):
 
     page.locator("#paletteK").fill("4")
     page.locator("#paletteK").dispatch_event("change")
-    page.wait_for_function("document.querySelectorAll('#extractedSwatches .swatch').length === 4", timeout=10000)
+    page.wait_for_function("() => document.querySelectorAll('#extractedSwatches .swatch').length === 4", timeout=10000)
     check(page.locator("#extractedSwatches .swatch").count() == 4, "the cluster count is applied")
 
     page.locator("#paletteUseBtn").click()
@@ -297,6 +297,16 @@ def run_desktop(browser, url):
     page.locator("#langSelect").select_option("en")
     check(page.locator("h1").inner_text() == "The right color, measured properly.", "english still works after switching back")
 
+    # ------------------------------------------------------ installation help
+    install = page.locator("#td-install-button")
+    check(install.is_visible(), "the install help button is available")
+    install.click()
+    check(page.locator("#td-install-dialog").is_visible() and
+          "Install a web app" in page.locator("#td-install-intro").inner_text(),
+          "the install button opens honest browser-specific help")
+    page.locator("#td-install-close").click()
+    check(not page.locator("#td-install-dialog").is_visible(), "the install dialog closes")
+
     page.close()
 
 
@@ -317,19 +327,46 @@ def run_tablet(browser, url):
     check(page.locator("h1").inner_text() == "Prava boja, pravilno izmerena.", "the Serbian Latin hero is shown")
 
     page.locator("#demoImageBtn").tap()
-    page.wait_for_function("document.querySelectorAll('#extractedSwatches .swatch').length === 6", timeout=10000)
+    page.wait_for_function("() => document.querySelectorAll('#extractedSwatches .swatch').length === 6", timeout=10000)
     check(page.locator("#extractedSwatches .swatch").count() == 6, "extraction works with touch")
     page.locator("#extractedSwatches .swatch").first.tap()
     check(page.locator("#heroHex").inner_text() != "#2563eb", "tapping a swatch changes the base color")
 
     overflow = page.evaluate("document.documentElement.scrollWidth - document.documentElement.clientWidth")
     check(overflow <= 1, "no horizontal overflow at 820px (got %dpx)" % overflow)
+    check(page.locator("#randomBtn").bounding_box()["height"] >= 44,
+          "coarse-pointer controls meet the 44px touch-target rule")
 
     page.locator("#hexInput").tap()
     page.locator("#hexInput").fill("#0f766e")
     page.locator("#hexInput").dispatch_event("change")
     check(page.locator("#heroHex").inner_text() == "#0f766e", "the hex input works with touch")
 
+    context.close()
+
+
+def run_small_phone(browser, url):
+    context = browser.new_context(
+        viewport={"width": 320, "height": 700},
+        has_touch=True,
+        is_mobile=True,
+        locale="en-US",
+    )
+    page = context.new_page()
+    attach(page)
+    response = page.goto(url, wait_until="networkidle")
+    check(response is not None and response.status == 200, "index.html loads at 320px")
+    overflow = page.evaluate("document.documentElement.scrollWidth - document.documentElement.clientWidth")
+    check(overflow <= 1, "no horizontal overflow at 320px (got %dpx)" % overflow)
+    check(page.locator("#td-install-button").bounding_box()["height"] >= 44,
+          "the install control keeps its touch target on a small phone")
+    page.locator("#td-install-button").tap()
+    dialog = page.locator("#td-install-dialog")
+    box = dialog.bounding_box()
+    check(dialog.is_visible() and box["x"] >= 0 and box["x"] + box["width"] <= 321,
+          "the install dialog opens within the small-phone viewport")
+    page.locator("#td-install-close").tap()
+    check(not dialog.is_visible(), "the install dialog closes with touch")
     context.close()
 
 
@@ -345,6 +382,7 @@ def main():
         browser = playwright.chromium.launch(headless=True)
         run_desktop(browser, url)
         run_tablet(browser, url)
+        run_small_phone(browser, url)
         browser.close()
 
     if errors:

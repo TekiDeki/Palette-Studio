@@ -375,6 +375,12 @@ ok(!/\*\/\*(CSS|COLOR|PALETTE|JS)\*\//.test(html), 'index.html has no leftover m
   ok(!new RegExp('hreflang="' + code + '"', 'i').test(html), 'no hreflang for the removed language ' + code);
 });
 
+ok(html.includes('id="ecran-mic"'), 'built file retains small-screen rules');
+ok(html.includes('id="tinte-44"'), 'built file retains touch-target rules');
+ok(html.includes('regula casei: tinte de atingere pe mobil'), 'built file retains mobile house rules');
+ok(html.includes('id="td-install-section"'), 'built file retains install section');
+ok(html.includes('id="td-install-dialog"'), 'built file retains install dialog');
+
 console.log('logic tests: %d passed, %d failed', passed, failures.length);
 if (failures.length) {
   failures.forEach(function (message) { console.log('  FAIL ' + message); });
