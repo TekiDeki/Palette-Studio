@@ -5,7 +5,7 @@
  * Cache name carries the app version; bump VERSION when index.html changes. */
 'use strict';
 const PREFIX = 'tekideki-palette-studio-';
-const CACHE = PREFIX + 'v1';
+const CACHE = PREFIX + 'v2';
 const SHELL = [
   './',
   './index.html',
